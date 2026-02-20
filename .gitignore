@@ -1,41 +1,21 @@
-# Prerequisites
-*.d
+# Visual Studio internal folders
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
+#Added bin
+bin/
+
+# Build artifacts
 *.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
 *.exe
-*.out
-*.app
+*.pdb
+*.ilk
+*.log
 
-# debug information files
-*.dwo
+# GLAD/External binaries (usually you don't want to track .dll or .lib if you can avoid it)
+*.dll
+*.exe
+
