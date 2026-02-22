@@ -133,27 +133,14 @@ int main()
 	};
 
 	unsigned int VBO, VAO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-
-	//Initialization code (done once (unless your object frequently changes))
-	//1. Bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-	glBindVertexArray(VAO);
-
-	//2. Bind & Copy our vertices array in a buffer for OpenGL to use
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	//3. Set our vertex attributes pointers
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-	glBindBuffer(GL_ARRAY_BUFFER, 0); // ??? Will come back to this later
-
-	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-	glBindVertexArray(0); // ??? Will come back to this later
+	glGenVertexArrays(1, &VAO);  // reserve a VAO ID
+	glGenBuffers(1, &VBO);       // reserve a VBO ID
+	glBindVertexArray(VAO);      // start recording into VAO1
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);                                         // select VBO1 as the active buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // upload vertex data to GPU
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // describe layout: slot 0, 3 floats, stride 12 bytes, offset 0
+	glEnableVertexAttribArray(0); // enable attribute slot 0 so the shader can read it
+	glBindVertexArray(0);         // stop recording, VAO1 is saved
 
 
 	// uncomment this call to draw in wireframe polygons.
