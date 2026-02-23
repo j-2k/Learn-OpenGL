@@ -3,6 +3,8 @@
 
 #include <iostream>	
 
+#include "./shaders/shaderLoaders.h"
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
@@ -66,64 +68,7 @@ int main()
 		return -1;
 	}
 
-	//First Triangle Steps ==========================================
-
-	//1. Vertex shader creation stage ---------------------------------
-	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-	//Attach shader source code to the shader object and compile the shader
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-	//Check for shader compile errors
-	int  success;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-	//Vertex shader creation end ---------------------------------
-
-	//2. Fragment shader creation stage ---------------------------------
-	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-	//Attach shader source code to the shader object and compile the shader
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	//Check for shader compile errors
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-	//Fragment shader creation end ---------------------------------
-
-	//3. Shader Program & Linking Stage ---------------------------------
-	unsigned int shaderProgram = glCreateProgram();
-
-	//A Shader program must have attached a vertex & fragment shader then linked for it to then be used in the renderer.
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	//Check for linking errors
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-	}
-
-	//Delete the shader objects once we've linked them into the program object; we no longer need them anymore.
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-	//Shader Program & Linking Stage end ---------------------------------
-
-
-
+	unsigned int shaderProgram = loadShaderProgram(vertexShaderSource, fragmentShaderSource);
 
 	//4. Setup vertices and buffers and configure vertex attributes ---------------------------------
 	float vertices[] = {
@@ -133,14 +78,14 @@ int main()
 	};
 
 	unsigned int VBO, VAO;
-	glGenVertexArrays(1, &VAO);  // reserve a VAO ID
-	glGenBuffers(1, &VBO);       // reserve a VBO ID
-	glBindVertexArray(VAO);      // start recording into VAO1
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);                                         // select VBO1 as the active buffer
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // upload vertex data to GPU
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // describe layout: slot 0, 3 floats, stride 12 bytes, offset 0
-	glEnableVertexAttribArray(0); // enable attribute slot 0 so the shader can read it
-	glBindVertexArray(0);         // stop recording, VAO1 is saved
+	glGenVertexArrays(1, &VAO);		// reserve a VAO ID
+	glGenBuffers(1, &VBO);			// reserve a VBO ID
+	glBindVertexArray(VAO);			// start recording into VAO
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);												// select VBO as the active buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);		// upload vertex data to GPU
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);	// describe layout: slot 0, 3 floats, stride 12 bytes, offset 0
+	glEnableVertexAttribArray(0);	// enable attribute slot 0 so the shader can read it
+	glBindVertexArray(0);			// stop recording, VAO is saved
 
 
 	// uncomment this call to draw in wireframe polygons.
