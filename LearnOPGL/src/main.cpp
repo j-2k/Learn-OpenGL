@@ -19,23 +19,22 @@ const char* WINDOW_TITLE = "CircusClown";
 
 // Vertex Shader
 const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"out vec4 vertexColor;\n"
+"layout (location = 0) in vec3 aPos;\n"		// the position variable has attribute position 0
+"layout (location = 1) in vec3 aColor;\n"	// the color variable has attribute position 1
+"out vec3 vertexColor;\n"
 "void main()\n"
 "{\n"
-"   vec2 color = (aPos.xy + 1.) / 2.0;\n"
-"	vertexColor = vec4(color,0., 1.0);\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"	vertexColor = aColor;\n"
+"   gl_Position = vec4(aPos, 1.0);\n"
 "}\0";
 
 // Fragment Shader
 const char* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
-"in vec4 vertexColor;\n"
-"uniform vec4 ourColor;\n"
+"in vec3 vertexColor;\n"
 "void main()\n"
 "{\n"
-"   FragColor = ourColor;\n"
+"   FragColor = vec4(vertexColor, 1.0);\n"
 "}\n\0";
 
 bool wireframe = false;
@@ -87,6 +86,7 @@ int main()
 
 
 	// Setup vertices and buffers and configure vertex attributes ---------------------------------
+	/*
 	float vertices[] = {
 		 0.5f,  0.5f, 0.0f,  // top right
 		 0.5f, -0.5f, 0.0f,  // bottom right
@@ -97,9 +97,17 @@ int main()
 		0, 1, 3,   // first triangle
 		1, 2, 3    // second triangle
 	};
+	*/
+
+	float vertices[] = {
+		// positions         // colors
+		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+	};
 
 	unsigned int VBO, VAO, EBO;
-	glGenBuffers(1, &EBO);			// reserve an EBO ID
+	//glGenBuffers(1, &EBO);			// reserve an EBO ID
 	glGenVertexArrays(1, &VAO);		// reserve a VAO ID
 	glGenBuffers(1, &VBO);			// reserve a VBO ID
 
@@ -107,14 +115,18 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);												// select VBO as the active buffer
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);		// upload vertex data to GPU
 	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);	// select EBO as the active buffer
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);	// upload vertex data to GPU
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);	// select EBO as the active buffer
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);	// upload vertex data to GPU
 	
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);	// describe layout: slot 0, 3 floats, stride 12 bytes, offset 0
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);	// describe layout: slot 0, 3 floats, stride 12 bytes, offset 0
 	glEnableVertexAttribArray(0);	// enable attribute slot 0 so the shader can read it
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));	// layout is now : slot 1, 3 floats, stride 12 bytes, offset 12 bytes (after the position data)
+	glEnableVertexAttribArray(1);	// enable attribute slot 0 so the shader can read it
 	glBindVertexArray(0);			// stop recording, VAO is saved
 
-
+	//Since we have 1 shader with the rgb verts that is constant we just set it once outisde the loop.
+	glUseProgram(shaderProgram);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -127,15 +139,17 @@ int main()
 		//Draw our first triangle
 			
 		//Shader Uniforms
+		/*
 		double  timeValue = glfwGetTime();
 		float c = static_cast<float>(cos(timeValue) / 2.0f + 0.5f);
 		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
 		glUseProgram(shaderProgram);
 		glUniform4f(vertexColorLocation, c + 0.2f, c, c - 0.4f, 1.0f);
+		*/
 
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
 		glBindVertexArray(0); // no need to unbind it every time
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
