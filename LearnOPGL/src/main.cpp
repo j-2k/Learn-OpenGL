@@ -20,17 +20,22 @@ const char* WINDOW_TITLE = "CircusClown";
 // Vertex Shader
 const char* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
+"out vec4 vertexColor;\n"
 "void main()\n"
 "{\n"
+"   vec2 color = (aPos.xy + 1.) / 2.0;\n"
+"	vertexColor = vec4(color,0., 1.0);\n"
 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
 "}\0";
 
 // Fragment Shader
 const char* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
+"in vec4 vertexColor;\n"
+"uniform vec4 ourColor;\n"
 "void main()\n"
 "{\n"
-"   FragColor = vec4(0.,1.,1., 1.0f);\n"
+"   FragColor = ourColor;\n"
 "}\n\0";
 
 bool wireframe = false;
@@ -70,7 +75,8 @@ int main()
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
-
+	
+	//Shader Management
 	unsigned int shaderProgram = loadShaderProgram(vertexShaderSource, fragmentShaderSource);
 	if (shaderProgram == 0)
 	{
@@ -78,7 +84,9 @@ int main()
 		return -1;
 	}
 
-	//4. Setup vertices and buffers and configure vertex attributes ---------------------------------
+
+
+	// Setup vertices and buffers and configure vertex attributes ---------------------------------
 	float vertices[] = {
 		 0.5f,  0.5f, 0.0f,  // top right
 		 0.5f, -0.5f, 0.0f,  // bottom right
@@ -106,6 +114,8 @@ int main()
 	glEnableVertexAttribArray(0);	// enable attribute slot 0 so the shader can read it
 	glBindVertexArray(0);			// stop recording, VAO is saved
 
+
+
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
 
@@ -115,7 +125,14 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//Draw our first triangle
+			
+		//Shader Uniforms
+		double  timeValue = glfwGetTime();
+		float c = static_cast<float>(cos(timeValue) / 2.0f + 0.5f);
+		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
 		glUseProgram(shaderProgram);
+		glUniform4f(vertexColorLocation, c + 0.2f, c, c - 0.4f, 1.0f);
+
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
@@ -125,6 +142,11 @@ int main()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	//optional here but do know these exist
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteProgram(shaderProgram);
 
 	//cleanup and exit
 	glfwTerminate();
