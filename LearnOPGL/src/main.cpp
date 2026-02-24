@@ -1,9 +1,11 @@
+//https://github.com/j-2k/Learn-OpenGL
+//===================================================
 #include <glad/glad.h>  // GLAD goes first!
 #include <GLFW/glfw3.h>
 
 #include <iostream>	
 
-#include "./shaders/shaderLoaders.h"
+#include "./shader-utils/shaderLoaders.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -14,7 +16,6 @@ const unsigned int SCR_HEIGHT = 600;
 
 // Window Title
 const char* WINDOW_TITLE = "CircusClown";
-
 
 // Vertex Shader
 const char* vertexShaderSource = "#version 330 core\n"
@@ -32,12 +33,14 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "   FragColor = vec4(0.,1.,1., 1.0f);\n"
 "}\n\0";
 
-
+bool wireframe = false;
+bool key1WasPressed = false; // track previous frame state
 
 
 int main()
 {
 	std::cout << "Hello, OpenGL!" << std::endl;
+	std::cout << "Press WASD to see input detection in action, press 1 to toggle wireframe mode" << std::endl;
 
 	glfwInit();
 
@@ -69,29 +72,39 @@ int main()
 	}
 
 	unsigned int shaderProgram = loadShaderProgram(vertexShaderSource, fragmentShaderSource);
+	if (shaderProgram == 0)
+	{
+		std::cout << "Failed to create shader program" << std::endl;
+		return -1;
+	}
 
 	//4. Setup vertices and buffers and configure vertex attributes ---------------------------------
 	float vertices[] = {
-		-0.5f, -0.5f, 0.0f,
-		 0.5f, -0.5f, 0.0f,
-		 0.0f,  0.5f, 0.0f
+		 0.5f,  0.5f, 0.0f,  // top right
+		 0.5f, -0.5f, 0.0f,  // bottom right
+		-0.5f, -0.5f, 0.0f,  // bottom left
+		-0.5f,  0.5f, 0.0f   // top left 
+	};
+	unsigned int indices[] = {  // note that we start from 0!
+		0, 1, 3,   // first triangle
+		1, 2, 3    // second triangle
 	};
 
-	unsigned int VBO, VAO;
+	unsigned int VBO, VAO, EBO;
+	glGenBuffers(1, &EBO);			// reserve an EBO ID
 	glGenVertexArrays(1, &VAO);		// reserve a VAO ID
 	glGenBuffers(1, &VBO);			// reserve a VBO ID
+
 	glBindVertexArray(VAO);			// start recording into VAO
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);												// select VBO as the active buffer
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);		// upload vertex data to GPU
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);	// select EBO as the active buffer
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);	// upload vertex data to GPU
+	
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);	// describe layout: slot 0, 3 floats, stride 12 bytes, offset 0
 	glEnableVertexAttribArray(0);	// enable attribute slot 0 so the shader can read it
 	glBindVertexArray(0);			// stop recording, VAO is saved
-
-
-	// uncomment this call to draw in wireframe polygons.
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // Very cool wire frame mode!
-
-
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -104,7 +117,9 @@ int main()
 		//Draw our first triangle
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
+		glBindVertexArray(0); // no need to unbind it every time
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		glfwSwapBuffers(window);
@@ -115,6 +130,9 @@ int main()
 	glfwTerminate();
 	return 0;
 }
+
+
+
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void processInput(GLFWwindow* window)
@@ -133,6 +151,25 @@ void processInput(GLFWwindow* window)
 		std::cout << "D";
 
 
+	bool key1IsPressed = glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS;
+
+	if (key1IsPressed && !key1WasPressed) // only triggers on the first frame of the press
+	{
+		std::cout << "1 was pressed\n";
+		wireframe = !wireframe;
+		if (wireframe)
+		{
+			std::cout << "Wireframe ON\n";
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
+		else
+		{
+			std::cout << "Wireframe OFF\n";
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+	}
+
+	key1WasPressed = key1IsPressed; // update at end of loop
 }
 
 // (GLFW) Whenever the window size changed (by OS or user resize) this callback function executes

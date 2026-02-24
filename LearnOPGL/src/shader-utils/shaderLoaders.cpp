@@ -1,4 +1,5 @@
 #include "shaderLoaders.h"
+#include <iostream>
 
 unsigned int loadShaderProgram(const char* vertexShaderSource, const char* fragmentShaderSource)
 {
@@ -17,6 +18,7 @@ unsigned int loadShaderProgram(const char* vertexShaderSource, const char* fragm
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		return 0;
 	}
 	//Vertex shader creation end ---------------------------------
 
@@ -33,6 +35,7 @@ unsigned int loadShaderProgram(const char* vertexShaderSource, const char* fragm
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+		return 0;
 	}
 	//Fragment shader creation end ---------------------------------
 
@@ -49,6 +52,7 @@ unsigned int loadShaderProgram(const char* vertexShaderSource, const char* fragm
 	if (!success) {
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		return 0;
 	}
 
 	//Delete the shader objects once we've linked them into the program object; we no longer need them anymore.
