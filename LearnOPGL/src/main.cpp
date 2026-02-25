@@ -17,25 +17,7 @@ const unsigned int SCR_HEIGHT = 600;
 // Window Title
 const char* WINDOW_TITLE = "CircusClown";
 
-// Vertex Shader
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"		// the position variable has attribute position 0
-"layout (location = 1) in vec3 aColor;\n"	// the color variable has attribute position 1
-"out vec3 vertexColor;\n"
-"void main()\n"
-"{\n"
-"	vertexColor = aColor;\n"
-"   gl_Position = vec4(aPos, 1.0);\n"
-"}\0";
 
-// Fragment Shader
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"in vec3 vertexColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(vertexColor, 1.0);\n"
-"}\n\0";
 
 bool wireframe = false;
 bool key1WasPressed = false; // track previous frame state
@@ -76,8 +58,8 @@ int main()
 	}
 	
 	//Shader Management
-	unsigned int shaderProgram = loadShaderProgram(vertexShaderSource, fragmentShaderSource);
-	if (shaderProgram == 0)
+	Shader shader(vertexShaderSource, fragmentShaderSource);
+	if (shader.programID == 0)
 	{
 		std::cout << "Failed to create shader program" << std::endl;
 		return -1;

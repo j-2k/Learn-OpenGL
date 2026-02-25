@@ -144,6 +144,10 @@
   <ItemGroup>
     <ClInclude Include="src\shader-utils\shaderLoaders.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="src\shaders\basic\basic-fs.glsl" />
+    <None Include="src\shaders\basic\basic-vs.glsl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
