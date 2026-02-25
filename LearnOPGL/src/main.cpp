@@ -56,9 +56,10 @@ int main()
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
-	
+
 	//Shader Management
-	Shader shader(vertexShaderSource, fragmentShaderSource);
+	Shader shader("src/shaders/basic/basic-vs.glsl", "src/shaders/basic/basic-fs.glsl");
+	
 	if (shader.programID == 0)
 	{
 		std::cout << "Failed to create shader program" << std::endl;
@@ -108,7 +109,7 @@ int main()
 	glBindVertexArray(0);			// stop recording, VAO is saved
 
 	//Since we have 1 shader with the rgb verts that is constant we just set it once outisde the loop.
-	glUseProgram(shaderProgram);
+	glUseProgram(shader.programID);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -142,7 +143,7 @@ int main()
 	//optional here but do know these exist
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteProgram(shaderProgram);
+	glDeleteProgram(shader.programID);
 
 	//cleanup and exit
 	glfwTerminate();

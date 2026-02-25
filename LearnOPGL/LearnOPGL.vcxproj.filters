@@ -24,14 +24,25 @@
     <ClCompile Include="src\shader-utils\shaderLoaders.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\shaders\ShaderLibrary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader-utils\shaderLoaders.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\shaders\ShaderLibrary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\shaders\ShaderGallery.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\basic\basic-vs.glsl" />
     <None Include="src\shaders\basic\basic-fs.glsl" />
+    <None Include="src\shaders\unlit\unlit-vs.glsl" />
+    <None Include="src\shaders\unlit\unlit-fs.glsl" />
   </ItemGroup>
 </Project>

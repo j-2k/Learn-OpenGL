@@ -137,16 +137,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\shaders\ShaderLibrary.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\shader-utils\shaderLoaders.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\shaders\ShaderGallery.h" />
+    <ClInclude Include="src\shaders\ShaderLibrary.h" />
     <ClInclude Include="src\shader-utils\shaderLoaders.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\basic\basic-fs.glsl" />
     <None Include="src\shaders\basic\basic-vs.glsl" />
+    <None Include="src\shaders\unlit\unlit-fs.glsl" />
+    <None Include="src\shaders\unlit\unlit-vs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
