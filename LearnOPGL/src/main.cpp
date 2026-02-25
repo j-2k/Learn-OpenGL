@@ -109,7 +109,7 @@ int main()
 	glBindVertexArray(0);			// stop recording, VAO is saved
 
 	//Since we have 1 shader with the rgb verts that is constant we just set it once outisde the loop.
-	glUseProgram(shader.programID);
+	shader.use();
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -119,17 +119,10 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//Draw our first triangle
-			
-		//Shader Uniforms
-		/*
-		double  timeValue = glfwGetTime();
-		float c = static_cast<float>(cos(timeValue) / 2.0f + 0.5f);
-		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-		glUseProgram(shaderProgram);
-		glUniform4f(vertexColorLocation, c + 0.2f, c, c - 0.4f, 1.0f);
-		*/
+		//Shader Uniforms usage, example of sending a uniform variable to the shader;
+		shader.setFloat("_time", glfwGetTime());
 
+		//Draw our first triangle
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
