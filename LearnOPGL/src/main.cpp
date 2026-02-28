@@ -5,6 +5,12 @@
 
 #include <iostream>	
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f); //Testing glm
+
 #include "./shader-utils/shaderLoaders.h"
 #include "../external/stb_image.h"
 
@@ -79,7 +85,8 @@ int main()
 
 	// load and generate the texture
 	int width, height, nrChannels;
-	unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis, must be before load.
+	unsigned char* data = stbi_load("./assets/ichise_ran_optimized.png", &width, &height, &nrChannels, 0);
 	if (data)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -87,7 +94,7 @@ int main()
 	}
 	else
 	{
-		std::cout << "Failed to load texture" << std::endl;
+		std::cout << "Failed to load texture! check path!" << std::endl;
 	}
 
 	//After we're done generating the texture and its corresponding mipmaps, it is good practice to free the image memory
@@ -148,6 +155,9 @@ int main()
 
 	//Since we have 1 shader with the rgb verts that is constant we just set it once outisde the loop.
 	shader.use();
+
+	glActiveTexture(GL_TEXTURE0); // active proper texture unit before binding
+	glBindTexture(GL_TEXTURE_2D, texture);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
