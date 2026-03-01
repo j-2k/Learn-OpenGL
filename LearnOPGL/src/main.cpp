@@ -9,8 +9,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f); //Testing glm
-
 #include "./shader-utils/shaderLoaders.h"
 #include "../external/stb_image.h"
 
@@ -159,6 +157,12 @@ int main()
 	glActiveTexture(GL_TEXTURE0); // active proper texture unit before binding
 	glBindTexture(GL_TEXTURE_2D, texture);
 
+	//Transformations
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+	unsigned int transformLoc = glGetUniformLocation(shader.programID, "transform");
+
+
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
 
@@ -168,7 +172,11 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//Shader Uniforms usage, example of sending a uniform variable to the shader;
-		shader.setFloat("_time", glfwGetTime());
+		shader.setFloat("_time", (float)glfwGetTime());
+
+		//Update Transformations
+		trans = glm::rotate(trans, glm::radians(45.0f)*0.001f, glm::vec3(0.0, 0.0, 1.0));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
 		//Draw our first triangle
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
