@@ -80,6 +80,8 @@ void Shader::use()
 	glUseProgram(programID);
 }
 
+// Helper functions to set uniforms in shaders.
+
 void Shader::setBool(const std::string& name, bool value) const
 {
 	glUniform1i(glGetUniformLocation(programID, name.c_str()), (int)value);

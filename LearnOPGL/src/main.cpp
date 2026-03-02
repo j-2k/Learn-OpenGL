@@ -158,13 +158,28 @@ int main()
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	//Transformations
-	glm::mat4 trans = glm::mat4(1.0f);
-	trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+	glm::mat4 transform = glm::mat4(1.0f);
+	transform = glm::translate(transform, glm::vec3(0.5f, 0.5f, 0.0f));
+	transform = glm::scale(transform, glm::vec3(0.5f));
 	unsigned int transformLoc = glGetUniformLocation(shader.programID, "transform");
+	//glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
 
+	//FPS - Console Output
+	double previousTime = glfwGetTime();
+	bool showFPS = false;
+	
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
+
+		//FPS - Console Output
+		if (showFPS)
+		{
+			double currentTime = glfwGetTime();
+			double deltaTime = currentTime - previousTime;
+			previousTime = currentTime;
+			std::cout << "FPS: " << 1 / deltaTime << std::endl;
+		}
 
 		processInput(window);
 
@@ -175,12 +190,19 @@ int main()
 		shader.setFloat("_time", (float)glfwGetTime());
 
 		//Update Transformations
-		trans = glm::rotate(trans, glm::radians(45.0f)*0.001f, glm::vec3(0.0, 0.0, 1.0));
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		transform = glm::rotate(transform, glm::radians(45.0f)*0.001f, glm::vec3(0.0, 0.0, 1.0));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 
 		//Draw our first triangle
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 		//glDrawArrays(GL_TRIANGLES, 0, 3); //triangles without EBO
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
+		//glBindVertexArray(0); // no need to unbind it every time
+
+
+		glm::mat4 transform2 = glm::mat4(1.0f);
+		transform2 = glm::translate(transform2, glm::vec3(-0.5f, -0.5f, 0.0f));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform2));
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
 		glBindVertexArray(0); // no need to unbind it every time
 
