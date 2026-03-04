@@ -16,8 +16,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
 // Engine Consts
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int WINDOW_WIDTH = 800;
+const unsigned int WINDOW_HEIGHT = 600;
 
 // Window Title
 const char* WINDOW_TITLE = "CircusClown";
@@ -162,7 +162,22 @@ int main()
 	transform = glm::translate(transform, glm::vec3(0.5f, 0.5f, 0.0f));
 	transform = glm::scale(transform, glm::vec3(0.5f));
 	unsigned int transformLoc = glGetUniformLocation(shader.programID, "transform");
-	//glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
+
+	//MVP (Model View Projection) setup
+	glm::mat4 view, projection;
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+	projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+
+	int modelLoc = glGetUniformLocation(shader.programID, "model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
+	int viewLoc = glGetUniformLocation(shader.programID, "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+	int projectionLoc = glGetUniformLocation(shader.programID, "projection");
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 
 	//FPS - Console Output
@@ -196,13 +211,6 @@ int main()
 		//Draw our first triangle
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 		//glDrawArrays(GL_TRIANGLES, 0, 3); //triangles without EBO
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
-		//glBindVertexArray(0); // no need to unbind it every time
-
-
-		glm::mat4 transform2 = glm::mat4(1.0f);
-		transform2 = glm::translate(transform2, glm::vec3(-0.5f, -0.5f, 0.0f));
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform2));
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
 		glBindVertexArray(0); // no need to unbind it every time
 

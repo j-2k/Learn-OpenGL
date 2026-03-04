@@ -11,6 +11,10 @@ uniform float _time;
 
 uniform mat4 transform;
 
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
 void main()
 {
 	vertexColor = aColor;
@@ -19,5 +23,6 @@ void main()
 
 
 
-	gl_Position = transform * vec4(aPos,1.);//vec4(aPos.x,aPos.y + (sin(_time * 3)*0.5),aPos.z, 1.0);
+	//gl_Position = transform * vec4(aPos,1.);//vec4(aPos.x,aPos.y + (sin(_time * 3)*0.5),aPos.z, 1.0);
+	gl_Position = projection * view * model * vec4(aPos, 1.0);
 }
