@@ -3,6 +3,7 @@
 #include <glad/glad.h>  // GLAD goes first!
 #include <GLFW/glfw3.h>
 
+#include <array>
 #include <iostream>	
 
 #include <glm/glm.hpp>
@@ -105,15 +106,51 @@ int main()
 
 	//Using EBO to to reduce verts for multiple tris
 	float vertices[] = {
-		//Position          // Color		  //Texture coords
-		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.f, 1.f,		// top right
-		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.f, 0.f,		// bottom right
-		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.f, 0.f,		// bottom left
-		-0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.f, 1.f,		// top left 
+		// Position            // Color           // UV
+		// Front face (z = 0.5)
+		-0.5f, -0.5f,  0.5f,  1,0,0,  0.f, 0.f,
+		 0.5f, -0.5f,  0.5f,  1,0,0,  1.f, 0.f,
+		 0.5f,  0.5f,  0.5f,  1,0,0,  1.f, 1.f,
+		-0.5f,  0.5f,  0.5f,  1,0,0,  0.f, 1.f,
+
+		// Back face (z = -0.5)
+		-0.5f, -0.5f, -0.5f,  0,1,0,  1.f, 0.f,
+		 0.5f, -0.5f, -0.5f,  0,1,0,  0.f, 0.f,
+		 0.5f,  0.5f, -0.5f,  0,1,0,  0.f, 1.f,
+		-0.5f,  0.5f, -0.5f,  0,1,0,  1.f, 1.f,
+
+		// Left face (x = -0.5)
+		-0.5f, -0.5f, -0.5f,  0,0,1,  0.f, 0.f,
+		-0.5f, -0.5f,  0.5f,  0,0,1,  1.f, 0.f,
+		-0.5f,  0.5f,  0.5f,  0,0,1,  1.f, 1.f,
+		-0.5f,  0.5f, -0.5f,  0,0,1,  0.f, 1.f,
+
+		// Right face (x = 0.5)
+		 0.5f, -0.5f,  0.5f,  1,1,0,  0.f, 0.f,
+		 0.5f, -0.5f, -0.5f,  1,1,0,  1.f, 0.f,
+		 0.5f,  0.5f, -0.5f,  1,1,0,  1.f, 1.f,
+		 0.5f,  0.5f,  0.5f,  1,1,0,  0.f, 1.f,
+
+		 // Top face (y = 0.5)
+		 -0.5f,  0.5f,  0.5f,  1,0,1,  0.f, 0.f,
+		  0.5f,  0.5f,  0.5f,  1,0,1,  1.f, 0.f,
+		  0.5f,  0.5f, -0.5f,  1,0,1,  1.f, 1.f,
+		 -0.5f,  0.5f, -0.5f,  1,0,1,  0.f, 1.f,
+
+		 // Bottom face (y = -0.5)
+		 -0.5f, -0.5f, -0.5f,  0,1,1,  0.f, 0.f,
+		  0.5f, -0.5f, -0.5f,  0,1,1,  1.f, 0.f,
+		  0.5f, -0.5f,  0.5f,  0,1,1,  1.f, 1.f,
+		 -0.5f, -0.5f,  0.5f,  0,1,1,  0.f, 1.f,
 	};
-	unsigned int indices[] = {  // note that we start from 0!
-		0, 1, 3,   // first triangle
-		1, 2, 3    // second triangle
+
+	unsigned int indices[] = {
+		0,1,2,  0,2,3,      // front
+		6,5,4,  7,6,4,      // back (flipped)
+		8,9,10, 8,10,11,    // left
+		12,13,14, 12,14,15, // right
+		16,17,18, 16,18,19, // top
+		20,21,22, 20,22,23  // bottom
 	};
 
 
@@ -149,7 +186,7 @@ int main()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));	// TEXTURE layout is now : slot 2, 2 floats, stride 8 bytes, offset 12 bytes (after the color data)
 	glEnableVertexAttribArray(2);	// enable attribute slot 2 so the shader can read it
 
-	glBindVertexArray(0);			// stop recording, VAO is saved
+	glBindVertexArray(0);			// stop recording, VAO is saved DONT NEED TO PUT IN RENDER LOOP LIKE BEFORE, ITS UNNECESSARY TO BIND/UNBIND EVERY FRAME. When changing VAO VBO EBOS etc they are overwritten, so this is not needed.
 
 	//Since we have 1 shader with the rgb verts that is constant we just set it once outisde the loop.
 	shader.use();
@@ -157,21 +194,17 @@ int main()
 	glActiveTexture(GL_TEXTURE0); // active proper texture unit before binding
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	//Transformations
-	glm::mat4 transform = glm::mat4(1.0f);
-	transform = glm::translate(transform, glm::vec3(0.5f, 0.5f, 0.0f));
-	transform = glm::scale(transform, glm::vec3(0.5f));
-	unsigned int transformLoc = glGetUniformLocation(shader.programID, "transform");
-	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
-
-
 	//MVP (Model View Projection) setup
-	glm::mat4 view, projection;
+	glm::mat4 model, view, projection;
+	model = glm::mat4(1.0f);
 	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 	projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
+
+	model = glm::translate(model, glm::vec3(0.75f, 0.75f, 0));
+	model = glm::scale(model, glm::vec3(0.5f));
 	int modelLoc = glGetUniformLocation(shader.programID, "model");
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(transform));
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
 	int viewLoc = glGetUniformLocation(shader.programID, "view");
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
@@ -179,10 +212,26 @@ int main()
 	int projectionLoc = glGetUniformLocation(shader.programID, "projection");
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
+	//OpenGL State Management
+	glEnable(GL_DEPTH_TEST);	// enable depth testing for correct z-ordering	
+	glEnable(GL_CULL_FACE);		// enable culling
+	glCullFace(GL_BACK);		// cull back faces //glCullFace(GL_FRONT); to see front face culling & test!
+	glFrontFace(GL_CCW);		// define front face as counter-clockwise (this is default)
 
 	//FPS - Console Output
 	double previousTime = glfwGetTime();
 	bool showFPS = false;
+
+	//Generate random position for cubes at init time
+	std::array<glm::vec3, 10> cubePositions;
+	for (int i = 0; i < 10; i++)
+	{
+		//rand currently has no set seed, thus the results will be the same when running the program multiple times.
+		float x = ((rand() % 50) - 25) / 10.0f;  // -5 to 4.9
+		float y = ((rand() % 50) - 25) / 10.0f;  // -5 to 4.9
+		float z = -15.0f;
+		cubePositions[i] = glm::vec3(x, y, z);
+	}
 	
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -199,20 +248,30 @@ int main()
 		processInput(window);
 
 		glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Shader Uniforms usage, example of sending a uniform variable to the shader;
 		shader.setFloat("_time", (float)glfwGetTime());
 
 		//Update Transformations
-		transform = glm::rotate(transform, glm::radians(45.0f)*0.001f, glm::vec3(0.0, 0.0, 1.0));
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+		model = glm::rotate(model, glm::radians(45.0f)*0.0001f, glm::vec3(1.0, 1.0, 1.0));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-		//Draw our first triangle
+		//Draw
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 		//glDrawArrays(GL_TRIANGLES, 0, 3); //triangles without EBO
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
-		glBindVertexArray(0); // no need to unbind it every time
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
+		//glBindVertexArray(0); // no need to unbind it every time?
+
+		//Multi Draw
+		for (int i = 0; i < 10; i++)
+		{
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), cubePositions[i]);
+			transform = glm::scale(transform, glm::vec3(0.2f));
+			transform = glm::rotate(transform, (float)glfwGetTime() * glm::radians(20.0f) * (i + 1), glm::vec3(0.5f, 1.0f, 0.0f));
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(transform));
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		}
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		glfwSwapBuffers(window);
