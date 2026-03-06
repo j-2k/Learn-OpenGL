@@ -200,17 +200,28 @@ int main()
 	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 	projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
-
+	//M
 	model = glm::translate(model, glm::vec3(0.75f, 0.75f, 0));
 	model = glm::scale(model, glm::vec3(0.5f));
-	int modelLoc = glGetUniformLocation(shader.programID, "model");
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+	shader.setMat4("model", model);
 
-	int viewLoc = glGetUniformLocation(shader.programID, "view");
-	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+	//Camera: +Z is behind, while forward is -Z, here we go back 3 units on the Z axis.
+	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+	glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget); //Pointing towards the camera from the target (z).
 
-	int projectionLoc = glGetUniformLocation(shader.programID, "projection");
-	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+	//Get Up and Right Vectors for the camera's coordinate system
+	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection)); //Right vector is perpendicular to the up and camDirection vectors.
+	glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight); //Up vector is perpendicular to the camDirection and cameraRight vectors.
+	const float radius = 10.0f;
+
+	shader.setMat4("view", view); 
+
+	shader.setMat4("projection", projection);
+
+
+
 
 	//OpenGL State Management
 	glEnable(GL_DEPTH_TEST);	// enable depth testing for correct z-ordering	
@@ -227,9 +238,9 @@ int main()
 	for (int i = 0; i < 10; i++)
 	{
 		//rand currently has no set seed, thus the results will be the same when running the program multiple times.
-		float x = ((rand() % 50) - 25) / 10.0f;  // -5 to 4.9
-		float y = ((rand() % 50) - 25) / 10.0f;  // -5 to 4.9
-		float z = -15.0f;
+		float x = ((rand() % 50) - 35) / 10.0f;  // -3.5  to  1.4
+		float y = ((rand() % 50) - 35) / 10.0f;  // -3.5  to  1.4
+		float z = -5.0f;
 		cubePositions[i] = glm::vec3(x, y, z);
 	}
 	
@@ -255,7 +266,13 @@ int main()
 
 		//Update Transformations
 		model = glm::rotate(model, glm::radians(45.0f)*0.0001f, glm::vec3(1.0, 1.0, 1.0));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		shader.setMat4("model", model);
+
+		float camX = (float)sin(glfwGetTime()) * radius;
+		float camZ = (float)cos(glfwGetTime()) * radius;
+		glm::mat4 view;
+		view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+		shader.setMat4("view", view);
 
 		//Draw
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
@@ -269,7 +286,7 @@ int main()
 			glm::mat4 transform = glm::translate(glm::mat4(1.0f), cubePositions[i]);
 			transform = glm::scale(transform, glm::vec3(0.2f));
 			transform = glm::rotate(transform, (float)glfwGetTime() * glm::radians(20.0f) * (i + 1), glm::vec3(0.5f, 1.0f, 0.0f));
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(transform));
+			shader.setMat4("model", transform);
 			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 		}
 

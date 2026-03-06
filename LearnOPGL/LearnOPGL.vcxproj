@@ -142,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="external\stb_image.cpp" />
+    <ClCompile Include="src\camera.h" />
     <ClCompile Include="src\shaders\ShaderLibrary.cpp" />
     <ClCompile Include="external\glad.c" />
     <ClCompile Include="src\main.cpp" />
