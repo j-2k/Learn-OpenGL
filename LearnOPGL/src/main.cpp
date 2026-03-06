@@ -12,6 +12,7 @@
 
 #include "./shader-utils/shaderLoaders.h"
 #include "../external/stb_image.h"
+#include "./camera.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -25,31 +26,21 @@ const unsigned int WINDOW_HEIGHT = 600;
 // Window Title
 const char* WINDOW_TITLE = "CircusClown";
 
-
-
+// Toggles
 bool wireframe = false;
-bool key1WasPressed = false; // track previous frame state
+bool key1WasPressed = false; // show/hide wireframe mode, track previous frame state to prevent multiple toggles per key press
+bool key2WasPressed = false; // show/hide cursor, track previous frame state to prevent multiple toggles per key press
 
-//Camera: +Z is behind, while forward is -Z, here we go back 3 units on the Z axis.
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget); //Pointing towards the camera from the target (z).
+//Camera setup
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = WINDOW_WIDTH / 2.0f;
+float lastY = WINDOW_HEIGHT / 2.0f;
+bool firstMouse = true;
 
-//Get Up and Right Vectors for the camera's coordinate system
-glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection)); //Right vector is perpendicular to the up and camDirection vectors.
-glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight); //Up vector is perpendicular to the camDirection and cameraRight vectors.
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-
+//deltaTime
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
-bool firstMouse = true;
-float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
-float pitch = 0.0f;
-float lastX = 800.0f / 2.0;
-float lastY = 600.0 / 2.0;
-float fov = 45.0f;
 
 int main()
 {
@@ -67,15 +58,13 @@ int main()
 
 	//Window creation
 	GLFWwindow* window = glfwCreateWindow(800, 600, WINDOW_TITLE, NULL, NULL);
-	if(window == NULL)
+	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
-
-
 
 	//glfw callbacks for input handling
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -94,7 +83,7 @@ int main()
 
 	//Shader Management
 	Shader shader("src/shaders/basic/basic-vs.glsl", "src/shaders/basic/basic-fs.glsl");
-	
+
 	if (shader.programID == 0)
 	{
 		std::cout << "Failed to create shader program" << std::endl;
@@ -188,7 +177,7 @@ int main()
 		// positions         // colors
 		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
 		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top
 	};
 	*/
 
@@ -200,7 +189,7 @@ int main()
 	glBindVertexArray(VAO);			// start recording into VAO
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);												// select VBO as the active buffer
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);		// upload vertex data to GPU
-	
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);	// select EBO as the active buffer
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);	// upload vertex data to GPU
 
@@ -209,7 +198,7 @@ int main()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);	// POSITION layout: slot 0, 3 floats, stride 12 bytes, offset 0
 	glEnableVertexAttribArray(0);	// enable attribute slot 0 so the shader can read it
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));	// COLOR layout is now : slot 1, 3 floats, stride 12 bytes, offset 12 bytes (after the position data)
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));	// COLOR layout is now : slot 1, 3 floats, stride 12 bytes, offset 12 bytes (after the position data)
 	glEnableVertexAttribArray(1);	// enable attribute slot 1 so the shader can read it
 
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));	// TEXTURE layout is now : slot 2, 2 floats, stride 8 bytes, offset 12 bytes (after the color data)
@@ -227,17 +216,13 @@ int main()
 	glm::mat4 model, view, projection;
 	model = glm::mat4(1.0f);
 	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-	projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+	projection = glm::perspective(glm::radians(45.0f), static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT), 0.1f, 100.0f);
 
-	//M
 	model = glm::translate(model, glm::vec3(0.75f, 0.75f, 0));
 	model = glm::scale(model, glm::vec3(0.5f));
+
 	shader.setMat4("model", model);
-
-
-
-	shader.setMat4("view", view); 
-
+	shader.setMat4("view", view);
 	shader.setMat4("projection", projection);
 
 
@@ -262,12 +247,12 @@ int main()
 		float z = -5.0f;
 		cubePositions[i] = glm::vec3(x, y, z);
 	}
-	
+
 	//Render loop
 	while (!glfwWindowShouldClose(window)) {
 
 		//FPS - Console Output
-		float currentFrame = glfwGetTime();
+		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		if (showFPS)
@@ -281,15 +266,20 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Shader Uniforms usage, example of sending a uniform variable to the shader;
-		shader.setFloat("_time", (float)glfwGetTime());
+		shader.setFloat("_time", static_cast<float>(glfwGetTime()));
 
 		//Update Transformations
-		model = glm::rotate(model, glm::radians(45.0f)*0.0001f, glm::vec3(1.0, 1.0, 1.0));
+		model = glm::rotate(model, glm::radians(45.0f) * 0.0001f, glm::vec3(1.0, 1.0, 1.0));
 		shader.setMat4("model", model);
 
 		glm::mat4 view;
-		view = glm::lookAt(cameraPos,cameraPos + cameraFront,cameraUp);
+		view = camera.GetViewMatrix();
 		shader.setMat4("view", view);
+
+		// pass projection matrix to shader (note that in this case it could change every frame)
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT), 0.1f, 100.0f);
+		shader.setMat4("projection", projection);
+
 
 		//Draw
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
@@ -302,7 +292,7 @@ int main()
 		{
 			glm::mat4 transform = glm::translate(glm::mat4(1.0f), cubePositions[i]);
 			transform = glm::scale(transform, glm::vec3(0.2f));
-			transform = glm::rotate(transform, (float)glfwGetTime() * glm::radians(20.0f) * (i + 1), glm::vec3(0.5f, 1.0f, 0.0f));
+			transform = glm::rotate(transform, static_cast<float>(glfwGetTime()) * glm::radians(20.0f) * (i + 1), glm::vec3(0.5f, 1.0f, 0.0f));
 			shader.setMat4("model", transform);
 			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 		}
@@ -323,27 +313,44 @@ int main()
 }
 
 
-
-
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
-	float cameraSpeed = 2.5f * deltaTime;
+
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+
+	// toggle cursor on/off with key 2
+	bool key2IsPressed = glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS;
+	if (key2IsPressed && !key2WasPressed) // only triggers on the first frame of the press
+	{
+		std::cout << "2 was pressed\n";
+		if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
+		{
+			std::cout << "Cursor Enabled\n";
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		else
+		{
+			std::cout << "Cursor Disabled\n";
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			firstMouse = true; // reset mouse movement tracking for when we re-enable the cursor
+			//Not correct behaviour, but keeping it for now!
+		}
+	}
 
 
+	// toggle wireframe mode with key 1
 	bool key1IsPressed = glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS;
-
 	if (key1IsPressed && !key1WasPressed) // only triggers on the first frame of the press
 	{
 		std::cout << "1 was pressed\n";
@@ -360,7 +367,10 @@ void processInput(GLFWwindow* window)
 		}
 	}
 
+
+
 	key1WasPressed = key1IsPressed; // update at end of loop
+	key2WasPressed = key2IsPressed; // update at end of loop
 }
 
 // (GLFW) Whenever the window size changed (by OS or user resize) this callback function executes
@@ -371,8 +381,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
 	float xpos = static_cast<float>(xposIn);
@@ -387,36 +395,14 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 
 	float xoffset = xpos - lastX;
 	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
 	lastX = xpos;
 	lastY = ypos;
 
-	float sensitivity = 0.1f; // change this value to your liking
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	yaw += xoffset;
-	pitch += yoffset;
-
-	// make sure that when pitch is out of bounds, screen doesn't get flipped
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
-
-	glm::vec3 front;
-	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(front);
+	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	fov -= (float)yoffset;
-	if (fov < 1.0f)
-		fov = 1.0f;
-	if (fov > 45.0f)
-		fov = 45.0f;
+	camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
