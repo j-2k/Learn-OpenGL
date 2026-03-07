@@ -1,64 +1,70 @@
 #pragma once
 
-#include <iostream>
+#include <vector>
 
 
-struct Geometry
+struct GeometryData
 {
-	//float vertices[];
-	//unsigned int indices[];
-
+	std::vector<float> vertices;
+	std::vector<unsigned int> indices;
 };
 
+GeometryData createCubeEBO()
+{
+	GeometryData data;
+
+	//Using EBO to to reduce verts for multiple tris
+	data.vertices = {
+		// Position            // Color           // UV
+		// Front face (z = 0.5)
+		-0.5f, -0.5f,  0.5f,  1,0,0,  0.f, 0.f,
+		 0.5f, -0.5f,  0.5f,  1,0,0,  1.f, 0.f,
+		 0.5f,  0.5f,  0.5f,  1,0,0,  1.f, 1.f,
+		-0.5f,  0.5f,  0.5f,  1,0,0,  0.f, 1.f,
+
+		// Back face (z = -0.5)
+		-0.5f, -0.5f, -0.5f,  0,1,0,  1.f, 0.f,
+		 0.5f, -0.5f, -0.5f,  0,1,0,  0.f, 0.f,
+		 0.5f,  0.5f, -0.5f,  0,1,0,  0.f, 1.f,
+		-0.5f,  0.5f, -0.5f,  0,1,0,  1.f, 1.f,
+
+		// Left face (x = -0.5)
+		-0.5f, -0.5f, -0.5f,  0,0,1,  0.f, 0.f,
+		-0.5f, -0.5f,  0.5f,  0,0,1,  1.f, 0.f,
+		-0.5f,  0.5f,  0.5f,  0,0,1,  1.f, 1.f,
+		-0.5f,  0.5f, -0.5f,  0,0,1,  0.f, 1.f,
+
+		// Right face (x = 0.5)
+		 0.5f, -0.5f,  0.5f,  1,1,0,  0.f, 0.f,
+		 0.5f, -0.5f, -0.5f,  1,1,0,  1.f, 0.f,
+		 0.5f,  0.5f, -0.5f,  1,1,0,  1.f, 1.f,
+		 0.5f,  0.5f,  0.5f,  1,1,0,  0.f, 1.f,
+
+		 // Top face (y = 0.5)
+		 -0.5f,  0.5f,  0.5f,  1,0,1,  0.f, 0.f,
+		  0.5f,  0.5f,  0.5f,  1,0,1,  1.f, 0.f,
+		  0.5f,  0.5f, -0.5f,  1,0,1,  1.f, 1.f,
+		 -0.5f,  0.5f, -0.5f,  1,0,1,  0.f, 1.f,
+
+		 // Bottom face (y = -0.5)
+		 -0.5f, -0.5f, -0.5f,  0,1,1,  0.f, 0.f,
+		  0.5f, -0.5f, -0.5f,  0,1,1,  1.f, 0.f,
+		  0.5f, -0.5f,  0.5f,  0,1,1,  1.f, 1.f,
+		 -0.5f, -0.5f,  0.5f,  0,1,1,  0.f, 1.f,
+	};
+
+	data.indices = {
+		0,1,2,  0,2,3,      // front
+		6,5,4,  7,6,4,      // back (flipped)
+		8,9,10, 8,10,11,    // left
+		12,13,14, 12,14,15, // right
+		16,17,18, 16,18,19, // top
+		20,21,22, 20,22,23  // bottom
+	};
+
+	return data;
+}
 
 
 
 
-//Using EBO to to reduce verts for multiple tris
-float vertices[] = {
-	// Position            // Color           // UV
-	// Front face (z = 0.5)
-	-0.5f, -0.5f,  0.5f,  1,0,0,  0.f, 0.f,
-	 0.5f, -0.5f,  0.5f,  1,0,0,  1.f, 0.f,
-	 0.5f,  0.5f,  0.5f,  1,0,0,  1.f, 1.f,
-	-0.5f,  0.5f,  0.5f,  1,0,0,  0.f, 1.f,
-
-	// Back face (z = -0.5)
-	-0.5f, -0.5f, -0.5f,  0,1,0,  1.f, 0.f,
-	 0.5f, -0.5f, -0.5f,  0,1,0,  0.f, 0.f,
-	 0.5f,  0.5f, -0.5f,  0,1,0,  0.f, 1.f,
-	-0.5f,  0.5f, -0.5f,  0,1,0,  1.f, 1.f,
-
-	// Left face (x = -0.5)
-	-0.5f, -0.5f, -0.5f,  0,0,1,  0.f, 0.f,
-	-0.5f, -0.5f,  0.5f,  0,0,1,  1.f, 0.f,
-	-0.5f,  0.5f,  0.5f,  0,0,1,  1.f, 1.f,
-	-0.5f,  0.5f, -0.5f,  0,0,1,  0.f, 1.f,
-
-	// Right face (x = 0.5)
-	 0.5f, -0.5f,  0.5f,  1,1,0,  0.f, 0.f,
-	 0.5f, -0.5f, -0.5f,  1,1,0,  1.f, 0.f,
-	 0.5f,  0.5f, -0.5f,  1,1,0,  1.f, 1.f,
-	 0.5f,  0.5f,  0.5f,  1,1,0,  0.f, 1.f,
-
-	 // Top face (y = 0.5)
-	 -0.5f,  0.5f,  0.5f,  1,0,1,  0.f, 0.f,
-	  0.5f,  0.5f,  0.5f,  1,0,1,  1.f, 0.f,
-	  0.5f,  0.5f, -0.5f,  1,0,1,  1.f, 1.f,
-	 -0.5f,  0.5f, -0.5f,  1,0,1,  0.f, 1.f,
-
-	 // Bottom face (y = -0.5)
-	 -0.5f, -0.5f, -0.5f,  0,1,1,  0.f, 0.f,
-	  0.5f, -0.5f, -0.5f,  0,1,1,  1.f, 0.f,
-	  0.5f, -0.5f,  0.5f,  0,1,1,  1.f, 1.f,
-	 -0.5f, -0.5f,  0.5f,  0,1,1,  0.f, 1.f,
-};
-
-unsigned int indices[] = {
-	0,1,2,  0,2,3,      // front
-	6,5,4,  7,6,4,      // back (flipped)
-	8,9,10, 8,10,11,    // left
-	12,13,14, 12,14,15, // right
-	16,17,18, 16,18,19, // top
-	20,21,22, 20,22,23  // bottom
-};

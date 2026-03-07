@@ -14,6 +14,7 @@
 #include "../external/stb_image.h"
 #include "./camera.h"
 #include "./texture.h"
+#include "./geometry.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -96,55 +97,7 @@ int main()
 
 
 	// Setup vertices and buffers and configure vertex attributes ---------------------------------
-
-	//Using EBO to to reduce verts for multiple tris
-	float vertices[] = {
-		// Position            // Color           // UV
-		// Front face (z = 0.5)
-		-0.5f, -0.5f,  0.5f,  1,0,0,  0.f, 0.f,
-		 0.5f, -0.5f,  0.5f,  1,0,0,  1.f, 0.f,
-		 0.5f,  0.5f,  0.5f,  1,0,0,  1.f, 1.f,
-		-0.5f,  0.5f,  0.5f,  1,0,0,  0.f, 1.f,
-
-		// Back face (z = -0.5)
-		-0.5f, -0.5f, -0.5f,  0,1,0,  1.f, 0.f,
-		 0.5f, -0.5f, -0.5f,  0,1,0,  0.f, 0.f,
-		 0.5f,  0.5f, -0.5f,  0,1,0,  0.f, 1.f,
-		-0.5f,  0.5f, -0.5f,  0,1,0,  1.f, 1.f,
-
-		// Left face (x = -0.5)
-		-0.5f, -0.5f, -0.5f,  0,0,1,  0.f, 0.f,
-		-0.5f, -0.5f,  0.5f,  0,0,1,  1.f, 0.f,
-		-0.5f,  0.5f,  0.5f,  0,0,1,  1.f, 1.f,
-		-0.5f,  0.5f, -0.5f,  0,0,1,  0.f, 1.f,
-
-		// Right face (x = 0.5)
-		 0.5f, -0.5f,  0.5f,  1,1,0,  0.f, 0.f,
-		 0.5f, -0.5f, -0.5f,  1,1,0,  1.f, 0.f,
-		 0.5f,  0.5f, -0.5f,  1,1,0,  1.f, 1.f,
-		 0.5f,  0.5f,  0.5f,  1,1,0,  0.f, 1.f,
-
-		 // Top face (y = 0.5)
-		 -0.5f,  0.5f,  0.5f,  1,0,1,  0.f, 0.f,
-		  0.5f,  0.5f,  0.5f,  1,0,1,  1.f, 0.f,
-		  0.5f,  0.5f, -0.5f,  1,0,1,  1.f, 1.f,
-		 -0.5f,  0.5f, -0.5f,  1,0,1,  0.f, 1.f,
-
-		 // Bottom face (y = -0.5)
-		 -0.5f, -0.5f, -0.5f,  0,1,1,  0.f, 0.f,
-		  0.5f, -0.5f, -0.5f,  0,1,1,  1.f, 0.f,
-		  0.5f, -0.5f,  0.5f,  0,1,1,  1.f, 1.f,
-		 -0.5f, -0.5f,  0.5f,  0,1,1,  0.f, 1.f,
-	};
-
-	unsigned int indices[] = {
-		0,1,2,  0,2,3,      // front
-		6,5,4,  7,6,4,      // back (flipped)
-		8,9,10, 8,10,11,    // left
-		12,13,14, 12,14,15, // right
-		16,17,18, 16,18,19, // top
-		20,21,22, 20,22,23  // bottom
-	};
+	GeometryData cubeData = createCubeEBO();
 
 	unsigned int VBO, VAO, EBO;
 	glGenBuffers(1, &EBO);			// reserve an EBO ID
@@ -152,11 +105,11 @@ int main()
 	glGenBuffers(1, &VBO);			// reserve a VBO ID
 
 	glBindVertexArray(VAO);			// start recording into VAO
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);												// select VBO as the active buffer
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);		// upload vertex data to GPU
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);	// select VBO as the active buffer
+	glBufferData(GL_ARRAY_BUFFER, cubeData.vertices.size() * sizeof(float), cubeData.vertices.data(), GL_STATIC_DRAW);		// upload vertex data to GPU
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);	// select EBO as the active buffer
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);	// upload vertex data to GPU
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeData.indices.size() * sizeof(float), cubeData.indices.data(), GL_STATIC_DRAW);	// upload vertex data to GPU
 
 	//glVertexAttribPointer (SLOT, SIZE, TYPE, NORMALIZED, STRIDE, OFFSET) <<< this is how we tell OpenGL how to interpret the vertex data we just uploaded. We have to do this for each attribute in our vertex data (position, color, texture coords)
 
