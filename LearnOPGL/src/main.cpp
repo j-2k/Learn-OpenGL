@@ -13,6 +13,7 @@
 #include "./shader-utils/shaderLoaders.h"
 #include "../external/stb_image.h"
 #include "./camera.h"
+#include "./texture.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -91,33 +92,7 @@ int main()
 	}
 
 	//Texture Loading
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// load and generate the texture
-	int width, height, nrChannels;
-	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis, must be before load.
-	unsigned char* data = stbi_load("./assets/ichise_ran_optimized.png", &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture! check path!" << std::endl;
-	}
-
-	//After we're done generating the texture and its corresponding mipmaps, it is good practice to free the image memory
-	stbi_image_free(data);
-
-
+	unsigned int texture = loadTexture("./assets/ichise_ran_optimized.png");
 
 
 	// Setup vertices and buffers and configure vertex attributes ---------------------------------
@@ -171,16 +146,6 @@ int main()
 		20,21,22, 20,22,23  // bottom
 	};
 
-
-	/* //triangles without EBO
-	float vertices[] = {
-		// positions         // colors
-		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
-		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top
-	};
-	*/
-
 	unsigned int VBO, VAO, EBO;
 	glGenBuffers(1, &EBO);			// reserve an EBO ID
 	glGenVertexArrays(1, &VAO);		// reserve a VAO ID
@@ -212,20 +177,11 @@ int main()
 	glActiveTexture(GL_TEXTURE0); // active proper texture unit before binding
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	//MVP (Model View Projection) setup
-	glm::mat4 model, view, projection;
-	model = glm::mat4(1.0f);
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-	projection = glm::perspective(glm::radians(45.0f), static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT), 0.1f, 100.0f);
-
+	//Making Cubes
+	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.75f, 0.75f, 0));
 	model = glm::scale(model, glm::vec3(0.5f));
-
 	shader.setMat4("model", model);
-	shader.setMat4("view", view);
-	shader.setMat4("projection", projection);
-
-
 
 
 	//OpenGL State Management
@@ -233,9 +189,6 @@ int main()
 	glEnable(GL_CULL_FACE);		// enable culling
 	glCullFace(GL_BACK);		// cull back faces //glCullFace(GL_FRONT); to see front face culling & test!
 	glFrontFace(GL_CCW);		// define front face as counter-clockwise (this is default)
-
-	//FPS - Console Output
-	bool showFPS = false;
 
 	//Generate random position for cubes at init time
 	std::array<glm::vec3, 10> cubePositions;
@@ -255,10 +208,9 @@ int main()
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		if (showFPS)
-		{
-			std::cout << "FPS: " << 1 / deltaTime << std::endl;
-		}
+
+		//std::cout << "FPS: " << 1 / deltaTime << std::endl;
+
 
 		processInput(window);
 
@@ -268,12 +220,11 @@ int main()
 		//Shader Uniforms usage, example of sending a uniform variable to the shader;
 		shader.setFloat("_time", static_cast<float>(glfwGetTime()));
 
-		//Update Transformations
+		//MVP matrices
 		model = glm::rotate(model, glm::radians(45.0f) * 0.0001f, glm::vec3(1.0, 1.0, 1.0));
 		shader.setMat4("model", model);
 
-		glm::mat4 view;
-		view = camera.GetViewMatrix();
+		glm::mat4 view = camera.GetViewMatrix();
 		shader.setMat4("view", view);
 
 		// pass projection matrix to shader (note that in this case it could change every frame)

@@ -149,10 +149,12 @@
     <ClCompile Include="src\shader-utils\shaderLoaders.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\geometry.h" />
     <ClInclude Include="src\shaders\ShaderGallery.h" />
     <ClInclude Include="src\shaders\ShaderLibrary.h" />
     <ClInclude Include="src\shader-utils\shaderLoaders.h" />
     <ClInclude Include="external\stb_image.h" />
+    <ClInclude Include="src\texture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\basic\basic-fs.glsl" />
