@@ -25,6 +25,9 @@ This section will highlight what are the required dependencies & how to get them
 Required Dependencies & Folder Architecture:
 * **OpenGL 3.3 (Core Profile)**
 
+* **GLM (Math)** - https://github.com/g-truc/glm/tags
+  * I used glm-0.9.8.5 I think from the learnopengl docs
+
 * **GLFW (Window & Input Management)** - https://www.glfw.org/download.html
   * Version 3.4 or higher
   * *Just download the 64-bit Windows binaries (pre-compiled).*
@@ -33,11 +36,8 @@ Required Dependencies & Folder Architecture:
   * Check the image below. First set the red boxes, then finally, press generate & download the glad.zip file.
 <img width="500"  alt="Screenshot_1" src="https://github.com/user-attachments/assets/19c47266-5bf0-4959-a498-e2b64be4857f" />
 
+# Core OpenGL Renderer Completed - Image Below!
+<img width="2557" height="1391" alt="image" src="https://github.com/user-attachments/assets/21278a64-6283-4907-81b1-1393d384b003" />
 
 
-* **Folder Architecture**
-  * `Dependencies/`
-    * `include/` — Header files (.h)
-    * `lib/` — Static library files (.lib)
-  * `LearnOPGL/`
-    * `src/` — All .cpp source files
+
