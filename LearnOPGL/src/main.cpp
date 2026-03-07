@@ -3,7 +3,6 @@
 #include <glad/glad.h>  // GLAD goes first!
 #include <GLFW/glfw3.h>
 
-#include <array>
 #include <iostream>	
 
 #include <glm/glm.hpp>
@@ -15,6 +14,7 @@
 #include "./camera.h"
 #include "./texture.h"
 #include "./geometry.h"
+#include "./renderer.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -26,7 +26,7 @@ const unsigned int WINDOW_WIDTH = 800;
 const unsigned int WINDOW_HEIGHT = 600;
 
 // Window Title
-const char* WINDOW_TITLE = "CircusClown";
+const char* WINDOW_TITLE = "Circus Clown";
 
 // Toggles
 bool wireframe = false;
@@ -59,7 +59,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	//Window creation
-	GLFWwindow* window = glfwCreateWindow(800, 600, WINDOW_TITLE, NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -86,43 +86,11 @@ int main()
 	//Shader Management
 	Shader shader("src/shaders/basic/basic-vs.glsl", "src/shaders/basic/basic-fs.glsl");
 
-	if (shader.programID == 0)
-	{
-		std::cout << "Failed to create shader program" << std::endl;
-		return -1;
-	}
-
 	//Texture Loading
 	unsigned int texture = loadTexture("./assets/ichise_ran_optimized.png");
 
-
-	// Setup vertices and buffers and configure vertex attributes ---------------------------------
-	GeometryData cubeData = createCubeEBO();
-
-	unsigned int VBO, VAO, EBO;
-	glGenBuffers(1, &EBO);			// reserve an EBO ID
-	glGenVertexArrays(1, &VAO);		// reserve a VAO ID
-	glGenBuffers(1, &VBO);			// reserve a VBO ID
-
-	glBindVertexArray(VAO);			// start recording into VAO
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);	// select VBO as the active buffer
-	glBufferData(GL_ARRAY_BUFFER, cubeData.vertices.size() * sizeof(float), cubeData.vertices.data(), GL_STATIC_DRAW);		// upload vertex data to GPU
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);	// select EBO as the active buffer
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cubeData.indices.size() * sizeof(float), cubeData.indices.data(), GL_STATIC_DRAW);	// upload vertex data to GPU
-
-	//glVertexAttribPointer (SLOT, SIZE, TYPE, NORMALIZED, STRIDE, OFFSET) <<< this is how we tell OpenGL how to interpret the vertex data we just uploaded. We have to do this for each attribute in our vertex data (position, color, texture coords)
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);	// POSITION layout: slot 0, 3 floats, stride 12 bytes, offset 0
-	glEnableVertexAttribArray(0);	// enable attribute slot 0 so the shader can read it
-
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));	// COLOR layout is now : slot 1, 3 floats, stride 12 bytes, offset 12 bytes (after the position data)
-	glEnableVertexAttribArray(1);	// enable attribute slot 1 so the shader can read it
-
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));	// TEXTURE layout is now : slot 2, 2 floats, stride 8 bytes, offset 12 bytes (after the color data)
-	glEnableVertexAttribArray(2);	// enable attribute slot 2 so the shader can read it
-
-	glBindVertexArray(0);			// stop recording, VAO is saved DONT NEED TO PUT IN RENDER LOOP LIKE BEFORE, ITS UNNECESSARY TO BIND/UNBIND EVERY FRAME. When changing VAO VBO EBOS etc they are overwritten, so this is not needed.
+	// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
+	MeshBuffers cubeMesh = setupMesh(createCubeEBO());
 
 	//Since we have 1 shader with the rgb verts that is constant we just set it once outisde the loop.
 	shader.use();
@@ -144,7 +112,7 @@ int main()
 	glFrontFace(GL_CCW);		// define front face as counter-clockwise (this is default)
 
 	//Generate random position for cubes at init time
-	std::array<glm::vec3, 10> cubePositions;
+	glm::vec3 cubePositions[10];
 	for (int i = 0; i < 10; i++)
 	{
 		//rand currently has no set seed, thus the results will be the same when running the program multiple times.
@@ -161,9 +129,7 @@ int main()
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-
 		//std::cout << "FPS: " << 1 / deltaTime << std::endl;
-
 
 		processInput(window);
 
@@ -186,10 +152,7 @@ int main()
 
 
 		//Draw
-		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-		//glDrawArrays(GL_TRIANGLES, 0, 3); //triangles without EBO
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // using EBO instead of VBO for glDrawElements
-		//glBindVertexArray(0); // no need to unbind it every time?
+		drawMesh(cubeMesh);
 
 		//Multi Draw
 		for (int i = 0; i < 10; i++)
@@ -198,7 +161,7 @@ int main()
 			transform = glm::scale(transform, glm::vec3(0.2f));
 			transform = glm::rotate(transform, static_cast<float>(glfwGetTime()) * glm::radians(20.0f) * (i + 1), glm::vec3(0.5f, 1.0f, 0.0f));
 			shader.setMat4("model", transform);
-			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+			drawMesh(cubeMesh);
 		}
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -207,8 +170,8 @@ int main()
 	}
 
 	//optional here but do know these exist
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	cubeMesh.destroy();
+	glDeleteTextures(1, &texture);
 	glDeleteProgram(shader.programID);
 
 	//cleanup and exit
@@ -252,7 +215,6 @@ void processInput(GLFWwindow* window)
 		}
 	}
 
-
 	// toggle wireframe mode with key 1
 	bool key1IsPressed = glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS;
 	if (key1IsPressed && !key1WasPressed) // only triggers on the first frame of the press
@@ -270,8 +232,6 @@ void processInput(GLFWwindow* window)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
-
-
 
 	key1WasPressed = key1IsPressed; // update at end of loop
 	key2WasPressed = key2IsPressed; // update at end of loop
