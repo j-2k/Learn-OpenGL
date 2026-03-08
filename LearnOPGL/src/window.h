@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "camera.h"
+#include "time.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -18,10 +19,6 @@ Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = 0;
 float lastY = 0;
 bool firstMouse = true;
-
-//deltaTime
-float deltaTime = 0.0f;	// Time between current frame and last frame
-float lastFrame = 0.0f; // Time of last frame
 
 class Window
 {
@@ -85,11 +82,6 @@ public:
 	int getHeight() const { return w_height; }
 	float getAspect() const { return static_cast<float>(w_width) / static_cast<float>(w_height); }
 
-	//void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-	//void processInput(GLFWwindow* window);
-	//void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-	//void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-
 private:
     GLFWwindow* w_window = nullptr;
     int         w_width;
@@ -101,18 +93,20 @@ private:
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void processInput(GLFWwindow* window)
 {
+	const float dt = Time::getInstance().getDeltaTime();
+
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime);
+		camera.ProcessKeyboard(FORWARD, dt);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
+		camera.ProcessKeyboard(BACKWARD, dt);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime);
+		camera.ProcessKeyboard(LEFT, dt);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime);
+		camera.ProcessKeyboard(RIGHT, dt);
 
 	// toggle cursor on/off with key 2
 	bool key2IsPressed = glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS;

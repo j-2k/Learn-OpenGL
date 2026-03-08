@@ -8,6 +8,7 @@
 #include "renderer.h"
 #include "geometry.h"
 #include "shader-utils/shaderLoaders.h"
+#include "time.h"
 
 // Engine Consts
 const unsigned int WINDOW_WIDTH = 800;
@@ -65,12 +66,7 @@ int main()
 
 	//Render loop
 	while (!window.shouldClose()) {
-
-		//FPS - Console Output
-		float currentFrame = static_cast<float>(glfwGetTime());
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-		//std::cout << "FPS: " << 1 / deltaTime << std::endl;
+		Time::getInstance().update(); // update deltaTime and totalTime
 
 		processInput(window.getWindow());
 
