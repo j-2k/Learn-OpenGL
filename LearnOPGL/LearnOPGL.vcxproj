@@ -150,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\geometry.h" />
+    <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\renderer.h" />
     <ClInclude Include="src\shaders\ShaderGallery.h" />
     <ClInclude Include="src\shaders\ShaderLibrary.h" />

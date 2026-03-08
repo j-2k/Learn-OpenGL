@@ -1,10 +1,9 @@
 #pragma once
 
-#include <glad/glad.h>
-#include <string>
+#include "pch.h"
 
 #include "../external/stb_image.h"
-#include <iostream>
+
 
 // Loads a texture from a file path and returns its OpenGL ID.
 // Returns 0 on failure.

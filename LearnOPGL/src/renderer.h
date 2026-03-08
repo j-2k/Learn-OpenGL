@@ -1,5 +1,5 @@
 #pragma once
-#include <glad/glad.h>
+#include "pch.h"
 #include "./geometry.h"
 
 struct MeshBuffers

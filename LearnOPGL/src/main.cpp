@@ -1,21 +1,13 @@
 //https://github.com/j-2k/Learn-OpenGL
 //===================================================
-#include <glad/glad.h>  // GLAD goes first!
-#include <GLFW/glfw3.h>
+#include "pch.h"
 
-#include <iostream>	
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include "./shader-utils/shaderLoaders.h"
-#include "../external/stb_image.h"
-#include "./camera.h"
-#include "./texture.h"
-#include "./geometry.h"
-#include "./renderer.h"
-#include "./window.h"
+#include "window.h"
+#include "camera.h"
+#include "texture.h"
+#include "renderer.h"
+#include "geometry.h"
+#include "shader-utils/shaderLoaders.h"
 
 // Engine Consts
 const unsigned int WINDOW_WIDTH = 800;
@@ -44,7 +36,8 @@ int main()
 	//Since we have 1 shader with the rgb verts that is constant we just set it once outisde the loop.
 	shader.use();
 
-	glActiveTexture(GL_TEXTURE0); // active proper texture unit before binding
+	//Active proper texture unit before binding
+	glActiveTexture(GL_TEXTURE0); 
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	//Making Cubes
@@ -52,7 +45,6 @@ int main()
 	model = glm::translate(model, glm::vec3(0.75f, 0.75f, 0));
 	model = glm::scale(model, glm::vec3(0.5f));
 	shader.setMat4("model", model);
-
 
 	//OpenGL State Management
 	glEnable(GL_DEPTH_TEST);	// enable depth testing for correct z-ordering	
