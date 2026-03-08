@@ -1,5 +1,6 @@
 //https://github.com/j-2k/Learn-OpenGL
-//===================================================
+//main.cpp
+
 #include "pch.h"
 
 #include "window.h"
