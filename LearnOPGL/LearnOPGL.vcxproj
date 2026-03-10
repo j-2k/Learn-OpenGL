@@ -161,6 +161,7 @@
     <ClInclude Include="src\window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="dev_notes.md" />
     <None Include="src\shaders\basic\basic-fs.glsl" />
     <None Include="src\shaders\basic\basic-vs.glsl" />
     <None Include="src\shaders\unlit\unlit-fs.glsl" />

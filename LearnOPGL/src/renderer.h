@@ -3,13 +3,16 @@
 #include "pch.h"
 #include "./geometry.h"
 
+enum class DrawMode { Arrays, Indexed };
+
 struct MeshBuffers
 {
     unsigned int VAO = 0;
     unsigned int VBO = 0;
-    unsigned int EBO = 0;      // 0 means no EBO — use glDrawArrays
-    unsigned int indexCount = 0;      // used when EBO exists
-    unsigned int vertexCount = 0;      // used when no EBO
+    unsigned int EBO = 0;                   // 0 means no EBO — use glDrawArrays
+    unsigned int indexCount = 0;            // used when EBO exists
+    unsigned int vertexCount = 0;           // used when no EBO
+    DrawMode drawMode = DrawMode::Arrays;   // <-- baked in at setup
 
     bool hasEBO() const { return EBO != 0; }
 
@@ -38,10 +41,11 @@ MeshBuffers setupMesh(const GeometryData& geoData) {
 
     if (!geoData.indices.empty())
     {
+        mesh.drawMode = DrawMode::Indexed;
         mesh.indexCount = static_cast<unsigned int>(geoData.indices.size());
         glGenBuffers(1, &mesh.EBO);			// reserve an EBO ID
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.EBO);	// select EBO as the active buffer
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, geoData.indices.size() * sizeof(float), geoData.indices.data(), GL_STATIC_DRAW);	// upload vertex data to GPU
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, geoData.indices.size() * sizeof(unsigned int), geoData.indices.data(), GL_STATIC_DRAW);	// upload vertex data to GPU
     }
 
     //glVertexAttribPointer (SLOT, SIZE, TYPE, NORMALIZED, STRIDE, OFFSET) <<< this is how we tell OpenGL how to interpret the vertex data we just uploaded. We have to do this for each attribute in our vertex data (position, color, texture coords)
@@ -62,8 +66,7 @@ MeshBuffers setupMesh(const GeometryData& geoData) {
 void drawMesh(const MeshBuffers& mesh)
 {
     glBindVertexArray(mesh.VAO);
-
-    if (mesh.hasEBO())
+    if (mesh.drawMode == DrawMode::Indexed) //now is reading stored intent rather than inferring from a null check!
         glDrawElements(GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_INT, 0);
     else
         glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount);
