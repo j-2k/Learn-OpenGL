@@ -66,7 +66,7 @@ MeshBuffers setupMesh(const GeometryData& geoData) {
 void drawMesh(const MeshBuffers& mesh)
 {
     glBindVertexArray(mesh.VAO);
-    if (mesh.drawMode == DrawMode::Indexed) //now is reading stored intent rather than inferring from a null check!
+    if (mesh.drawMode == DrawMode::Indexed) //now is reading stored intent rather than inferring from a null check, not too big increase but whatever.
         glDrawElements(GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_INT, 0);
     else
         glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount);
