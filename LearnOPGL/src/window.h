@@ -2,24 +2,6 @@
 #pragma once
 
 #include "pch.h"
-#include "camera.h"
-#include "time.h"
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-
-// Toggles
-bool wireframe = false;
-bool key1WasPressed = false; // show/hide wireframe mode, track previous frame state to prevent multiple toggles per key press
-bool key2WasPressed = false; // show/hide cursor, track previous frame state to prevent multiple toggles per key press
-
-//Camera setup
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = 0;
-float lastY = 0;
-bool firstMouse = true;
 
 class Window
 {
@@ -45,11 +27,6 @@ public:
 		}
 		glfwMakeContextCurrent(w_window);
 
-		//glfw callbacks for input handling
-		glfwSetFramebufferSizeCallback(w_window, framebuffer_size_callback);
-		glfwSetCursorPosCallback(w_window, mouse_callback);
-		glfwSetScrollCallback(w_window, scroll_callback);
-
 		//Tell GLFW to capture our mouse (disable cursor)
 		glfwSetInputMode(w_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -59,9 +36,6 @@ public:
 			std::cout << "Failed to initialize GLAD" << std::endl;
 			return;
 		}
-
-		lastX = width / 2.0f;
-		lastY = height / 2.0f;
 	}
 
 	~Window() 
@@ -88,98 +62,3 @@ private:
     int         w_width;
     int         w_height;
 };
-
-
-
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void processInput(GLFWwindow* window)
-{
-	const float dt = Time::getInstance().getDeltaTime();
-
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
-
-
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, dt);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, dt);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, dt);
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, dt);
-
-	// toggle cursor on/off with key 2
-	bool key2IsPressed = glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS;
-	if (key2IsPressed && !key2WasPressed) // only triggers on the first frame of the press
-	{
-		std::cout << "2 was pressed\n";
-		if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
-		{
-			std::cout << "Cursor Enabled\n";
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		}
-		else
-		{
-			std::cout << "Cursor Disabled\n";
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			firstMouse = true; // reset mouse movement tracking for when we re-enable the cursor
-			//Not correct behaviour, but keeping it for now!
-		}
-	}
-
-	// toggle wireframe mode with key 1
-	bool key1IsPressed = glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS;
-	if (key1IsPressed && !key1WasPressed) // only triggers on the first frame of the press
-	{
-		std::cout << "1 was pressed\n";
-		wireframe = !wireframe;
-		if (wireframe)
-		{
-			std::cout << "Wireframe ON\n";
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		}
-		else
-		{
-			std::cout << "Wireframe OFF\n";
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
-	}
-
-	key1WasPressed = key1IsPressed; // update at end of loop
-	key2WasPressed = key2IsPressed; // update at end of loop
-}
-
-// (GLFW) Whenever the window size changed (by OS or user resize) this callback function executes
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	// make sure the viewport matches the new window dimensions; note that width and 
-	// height will be significantly larger than specified on retina displays.
-	glViewport(0, 0, width, height);
-}
-
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
-{
-	float xpos = static_cast<float>(xposIn);
-	float ypos = static_cast<float>(yposIn);
-
-	if (firstMouse)
-	{
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
-	}
-
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-	lastX = xpos;
-	lastY = ypos;
-
-	camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-	camera.ProcessMouseScroll(static_cast<float>(yoffset));
-}

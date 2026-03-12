@@ -65,6 +65,9 @@
     <ClInclude Include="src\time.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\inputhandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\basic\basic-vs.glsl" />
@@ -72,6 +75,8 @@
     <None Include="src\shaders\unlit\unlit-vs.glsl" />
     <None Include="src\shaders\unlit\unlit-fs.glsl" />
     <None Include="dev_notes.md" />
+    <None Include="src\shaders\lit\lit-fs.glsl" />
+    <None Include="src\shaders\lit\lit-vs.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\ichise_ran_optimized.png">

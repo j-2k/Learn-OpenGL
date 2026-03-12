@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -150,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\geometry.h" />
+    <ClInclude Include="src\inputhandler.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\renderer.h" />
     <ClInclude Include="src\shaders\ShaderGallery.h" />
@@ -164,6 +165,8 @@
     <None Include="dev_notes.md" />
     <None Include="src\shaders\basic\basic-fs.glsl" />
     <None Include="src\shaders\basic\basic-vs.glsl" />
+    <None Include="src\shaders\lit\lit-fs.glsl" />
+    <None Include="src\shaders\lit\lit-vs.glsl" />
     <None Include="src\shaders\unlit\unlit-fs.glsl" />
     <None Include="src\shaders\unlit\unlit-vs.glsl" />
   </ItemGroup>

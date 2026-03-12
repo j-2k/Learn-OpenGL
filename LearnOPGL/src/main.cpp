@@ -10,6 +10,7 @@
 #include "geometry.h"
 #include "shader-utils/shaderLoaders.h"
 #include "time.h"
+#include "inputhandler.h"
 
 // Engine Consts
 const unsigned int WINDOW_WIDTH = 800;
@@ -25,34 +26,20 @@ int main()
 
 	//Window Management
 	Window window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+	Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+	InputHandler inputHandler(window.getWindow(), camera);
 
-	//Shader Management
-	Shader shader("src/shaders/basic/basic-vs.glsl", "src/shaders/basic/basic-fs.glsl");
+	initGLStates();	//Depth testing, face culling, etc.
 
-	//Texture Loading
-	unsigned int texture = loadTexture("./assets/ichise_ran_optimized.png");
-
-	// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
-	MeshBuffers cubeMesh = setupMesh(createCubeEBO());
-
-	//Since we have 1 shader with the rgb verts that is constant we just set it once outisde the loop.
-	shader.use();
-
-	//Active proper texture unit before binding
-	glActiveTexture(GL_TEXTURE0); 
-	glBindTexture(GL_TEXTURE_2D, texture);
+	Shader shader("src/shaders/basic/basic-vs.glsl","src/shaders/basic/basic-fs.glsl"); //Shader Management
+	unsigned int texture = loadTexture("./assets/ichise_ran_optimized.png");			//Texture Loading
+	MeshBuffers cubeMesh = setupMesh(createCubeEBO());							// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
 
 	//Making Cubes
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.75f, 0.75f, 0));
 	model = glm::scale(model, glm::vec3(0.5f));
 	shader.setMat4("model", model);
-
-	//OpenGL State Management
-	glEnable(GL_DEPTH_TEST);	// enable depth testing for correct z-ordering	
-	glEnable(GL_CULL_FACE);		// enable culling
-	glCullFace(GL_BACK);		// cull back faces //glCullFace(GL_FRONT); to see front face culling & test!
-	glFrontFace(GL_CCW);		// define front face as counter-clockwise (this is default)
 
 	//Generate random position for cubes at init time
 	glm::vec3 cubePositions[10];
@@ -65,11 +52,20 @@ int main()
 		cubePositions[i] = glm::vec3(x, y, z);
 	}
 
+	{	//Marking it in scope because this will probably be moved in the loop in the future.
+		//Since we have 1 shader with the rgb verts that is constant we just set it once outisde the loop.
+		shader.use();
+
+		//Active proper texture unit before binding
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+	}
+
 	//Render loop
 	while (!window.shouldClose()) {
 		Time::getInstance().update(); // update deltaTime and totalTime
 
-		processInput(window.getWindow());
+		inputHandler.processInput();
 
 		glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -87,7 +83,6 @@ int main()
 		// pass projection matrix to shader (note that in this case it could change every frame)
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT), 0.1f, 100.0f);
 		shader.setMat4("projection", projection);
-
 
 		//Draw
 		drawMesh(cubeMesh);

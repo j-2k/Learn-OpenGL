@@ -72,5 +72,13 @@ void drawMesh(const MeshBuffers& mesh)
         glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount);
 }
 
+void initGLStates() {
+    //OpenGL State Management
+    glEnable(GL_DEPTH_TEST);	// enable depth testing for correct z-ordering	
+    glEnable(GL_CULL_FACE);		// enable culling
+    glCullFace(GL_BACK);		// cull back faces //glCullFace(GL_FRONT); to see front face culling & test!
+    glFrontFace(GL_CCW);		// define front face as counter-clockwise (this is default)
+}
+
 
 
