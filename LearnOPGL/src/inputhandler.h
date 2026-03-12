@@ -15,8 +15,6 @@ public:
         glfwSetScrollCallback(window, scrollCallback);
 
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        m_window = window;
-		m_camera = camera;
     }
 
     // Call once per frame inside the render loop
@@ -30,6 +28,8 @@ public:
         if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS) m_camera.ProcessKeyboard(BACKWARD, dt);
         if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS) m_camera.ProcessKeyboard(LEFT, dt);
         if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS) m_camera.ProcessKeyboard(RIGHT, dt);
+        if (glfwGetKey(m_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) m_camera.ProcessKeyboard(UP, dt);
+        if (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS) m_camera.ProcessKeyboard(DOWN, dt);
 
         bool key1IsPressed = glfwGetKey(m_window, GLFW_KEY_1) == GLFW_PRESS;
         if (key1IsPressed && !m_key1WasPressed)
