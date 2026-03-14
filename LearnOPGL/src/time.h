@@ -17,7 +17,7 @@ public:
 	}
 
 	float getDeltaTime() const { return deltaTime; }
-	float getTotalTime() const { return totalTime; }
+	float getTotalTime() const { return static_cast<float>(glfwGetTime()); }
 	float getFPS() const { return 1.0f / deltaTime; }
 
 	// Delete copy/move so nobody can accidentally duplicate the instance
@@ -29,5 +29,4 @@ private:
 	
 	float deltaTime = 0.0f;	// Time between current frame and last frame
 	float lastFrame = 0.0f; // Time of last frame
-	float totalTime = 0.0f; // Total time since the application started
 };

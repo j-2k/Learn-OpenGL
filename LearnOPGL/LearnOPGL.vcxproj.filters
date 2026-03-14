@@ -77,6 +77,8 @@
     <None Include="dev_notes.md" />
     <None Include="src\shaders\lit\lit-fs.glsl" />
     <None Include="src\shaders\lit\lit-vs.glsl" />
+    <None Include="src\shaders\lightsource\lightsource-fs.glsl" />
+    <None Include="src\shaders\lightsource\lightsource-vs.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\ichise_ran_optimized.png">

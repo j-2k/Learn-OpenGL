@@ -12,6 +12,7 @@
 #include "time.h"
 #include "inputhandler.h"
 
+
 // Engine Consts
 const unsigned int WINDOW_WIDTH = 800;
 const unsigned int WINDOW_HEIGHT = 600;
@@ -32,14 +33,9 @@ int main()
 	initGLStates();	//Depth testing, face culling, etc.
 
 	Shader shader("src/shaders/basic/basic-vs.glsl","src/shaders/basic/basic-fs.glsl"); //Shader Management
+	Shader lightShader("src/shaders/lightsource/lightsource-vs.glsl", "src/shaders/lightsource/lightsource-fs.glsl"); //Shader Management
 	unsigned int texture = loadTexture("./assets/ichise_ran_optimized.png");			//Texture Loading
 	MeshBuffers cubeMesh = setupMesh(createCubeEBO());							// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
-
-	//Making Cubes
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.75f, 0.75f, 0));
-	model = glm::scale(model, glm::vec3(0.5f));
-	shader.setMat4("model", model);
 
 	//Generate random position for cubes at init time
 	glm::vec3 cubePositions[10];
@@ -52,13 +48,10 @@ int main()
 		cubePositions[i] = glm::vec3(x, y, z);
 	}
 
-	{	//Marking it in scope because this will probably be moved in the loop in the future.
-		//Since we have 1 shader with the rgb verts that is constant we just set it once outisde the loop.
-		shader.use();
-
+	{	
 		//Active proper texture unit before binding
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, texture);
 	}
 
 	//Render loop
@@ -70,32 +63,46 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//Shader Uniforms usage, example of sending a uniform variable to the shader;
-		shader.setFloat("_time", static_cast<float>(glfwGetTime()));
-
-		//MVP matrices
-		model = glm::rotate(model, glm::radians(45.0f) * 0.0001f, glm::vec3(1.0, 1.0, 1.0));
-		shader.setMat4("model", model);
-
-		glm::mat4 view = camera.GetViewMatrix();
-		shader.setMat4("view", view);
-
+		// commons
 		// pass projection matrix to shader (note that in this case it could change every frame)
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT), 0.1f, 100.0f);
-		shader.setMat4("projection", projection);
+		float t = Time::getInstance().getTotalTime();
+		
+		//MUST ALWAYS USE THE SHADER FIRST BEFORE SETTING UNIFORMS, OTHERWISE THE UNIFORM SETTING CALLS WILL BE A NO-OP SINCE THEY AFFECT THE CURRENTLY ACTIVE SHADER, WHICH WOULD BE WRONG IF WE DIDNT ACTIVATE THE SHADER FIRST.		
+		{	//Light source cube
+			lightShader.use();
 
-		//Draw
-		drawMesh(cubeMesh);
+			//Shader Uniforms usage, example of sending a uniform variable to the shader;
+			lightShader.setFloat("_time", t);
+			//MVP matrices
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, -3.0f));
+			transform = glm::rotate(transform, t * glm::radians(40.0f), glm::vec3(1.0, 1.0, 1.0));
+			lightShader.setMat4("model", transform);
+			lightShader.setMat4("view", camera.GetViewMatrix());
+			lightShader.setMat4("projection", projection);
 
-		//Multi Draw
-		for (int i = 0; i < 10; i++)
-		{
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f), cubePositions[i]);
-			transform = glm::scale(transform, glm::vec3(0.2f));
-			transform = glm::rotate(transform, static_cast<float>(glfwGetTime()) * glm::radians(20.0f) * (i + 1), glm::vec3(0.5f, 1.0f, 0.0f));
-			shader.setMat4("model", transform);
 			drawMesh(cubeMesh);
 		}
+
+
+		//Slightly confused right now on how textured objs need to be activated?
+		{	//Textured cubes
+			shader.use();
+			shader.setMat4("view", camera.GetViewMatrix());
+			shader.setMat4("projection", projection);
+
+			//Multi Draw
+			for (int i = 0; i < 10; i++)
+			{
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), cubePositions[i]);
+				transform = glm::scale(transform, glm::vec3(0.2f));
+				transform = glm::rotate(transform, t * glm::radians(20.0f) * (i + 1), glm::vec3(0.5f, 1.0f, 0.0f));
+				shader.setMat4("model", transform);
+				drawMesh(cubeMesh);
+			}
+		}
+
+
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		window.swapAndPoll();
@@ -105,6 +112,7 @@ int main()
 	cubeMesh.destroy();
 	glDeleteTextures(1, &texture);
 	glDeleteProgram(shader.programID);
+	glDeleteProgram(lightShader.programID);
 
 	return 0;
 }
