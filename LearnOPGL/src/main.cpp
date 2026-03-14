@@ -34,7 +34,7 @@ int main()
 
 	Shader shader("src/shaders/basic/basic-vs.glsl","src/shaders/basic/basic-fs.glsl"); //Shader Management
 	Shader lightShader("src/shaders/lightsource/lightsource-vs.glsl", "src/shaders/lightsource/lightsource-fs.glsl"); //Shader Management
-	unsigned int texture = loadTexture("./assets/ichise_ran_optimized.png");			//Texture Loading
+	unsigned int ichiseTex = loadTexture("./assets/ichise_ran_optimized.png");			//Texture Loading
 	MeshBuffers cubeMesh = setupMesh(createCubeEBO());							// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
 
 	//Generate random position for cubes at init time
@@ -81,6 +81,9 @@ int main()
 			lightShader.setMat4("view", camera.GetViewMatrix());
 			lightShader.setMat4("projection", projection);
 
+			lightShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+			lightShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+
 			drawMesh(cubeMesh);
 		}
 
@@ -90,6 +93,10 @@ int main()
 			shader.use();
 			shader.setMat4("view", camera.GetViewMatrix());
 			shader.setMat4("projection", projection);
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, ichiseTex);
+			shader.setInt("tex0", 0);
 
 			//Multi Draw
 			for (int i = 0; i < 10; i++)
@@ -110,7 +117,7 @@ int main()
 
 	//optional here but do know these exist
 	cubeMesh.destroy();
-	glDeleteTextures(1, &texture);
+	glDeleteTextures(1, &ichiseTex);
 	glDeleteProgram(shader.programID);
 	glDeleteProgram(lightShader.programID);
 
