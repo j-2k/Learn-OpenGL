@@ -64,6 +64,7 @@ int main()
 		// pass projection matrix to shader (note that in this case it could change every frame)
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT), 0.1f, 100.0f);
 		float t = Time::getInstance().getTotalTime();
+		float sinX = sin(t) * 8.0f;
 		
 		//MUST ALWAYS USE THE SHADER FIRST BEFORE SETTING UNIFORMS, OTHERWISE THE UNIFORM SETTING CALLS WILL BE A NO-OP SINCE THEY AFFECT THE CURRENTLY ACTIVE SHADER, WHICH WOULD BE WRONG IF WE DIDNT ACTIVATE THE SHADER FIRST.		
 		{	//Light source cube
@@ -72,7 +73,7 @@ int main()
 			//Shader Uniforms usage, example of sending a uniform variable to the shader;
 			lightShader.setFloat("_time", t);
 			//MVP matrices
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, -3.0f));
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(sinX, 2.0f, -3.0f));
 			transform = glm::rotate(transform, t * glm::radians(40.0f), glm::vec3(1.0, 1.0, 1.0));
 			lightShader.setMat4("model", transform);
 			lightShader.setMat4("view", camera.GetViewMatrix());
@@ -116,6 +117,11 @@ int main()
 			litShader.setMat4("model", transform);
 			litShader.setMat4("view", camera.GetViewMatrix());
 			litShader.setMat4("projection", projection);
+
+
+			litShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+			litShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+			litShader.setVec3("lightPos", sinX, 2.0f, -3.0f);
 
 			drawMesh(lightCubeMesh);
 		}
