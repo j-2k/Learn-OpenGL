@@ -3,13 +3,18 @@
 out vec4 FragColor;
 
 in vec3 vertexPos;
+in vec3 normalPos;
 
 uniform float _time;
-uniform vec3 objectColor;
+
 uniform vec3 lightColor;
 
 
 void main()
 {
-   FragColor = vec4(objectColor * lightColor, 1.0);
+	float ambientStr = 0.1;
+	vec3 ambient = ambientStr * lightColor;
+
+	vec3 fc = ambient * lightColor;
+	FragColor = vec4(normalPos, 1.0);
 }
