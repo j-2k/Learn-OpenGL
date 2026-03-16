@@ -7,6 +7,17 @@
 
 ---
 
+3/16/2026
+
+1.  Issue: Renderer is currently hard coded to take in certain types of vertex layouts, this isnt good, later it needs to be able to take in any type of vertex layout!
+	1. Solve Method: Y
+	1. Date: X/X/2026
+2.  Issue: X
+	1. Solve Method: Y
+	1. Date: X/X/2026
+
+---
+
 3/X/2026
 
 1.  Issue: X
