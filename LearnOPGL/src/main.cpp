@@ -37,7 +37,7 @@ int main()
 	Shader litShader("src/shaders/lit/lit-vs.glsl", "src/shaders/lit/lit-fs.glsl"); //Shader Management
 	
 	unsigned int ichiseTex = loadTexture("./assets/ichise_ran_optimized.png");			//Texture Loading
-	MeshBuffers cubeMesh = setupMesh(createCubeEBO());							// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
+	MeshBuffers cubeMesh = setupMesh(createCubeEBO(), Layout_Pos3_Col3_UV2());							// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
 	MeshBuffers lightCubeMesh = setupMesh(createCubeNormals(), Layout_Pos3_Norm3());						// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
 
 	//Generate random position for cubes at init time

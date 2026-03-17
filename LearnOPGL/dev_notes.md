@@ -9,7 +9,26 @@
 
 3/16/2026
 
-1.  Issue: Renderer is currently hard coded to take in certain types of vertex layouts, this isnt good, later it needs to be able to take in any type of vertex layout!
+1.  Issue: ~~Renderer is currently hard coded to take in certain types of vertex layouts, this isnt good, later it needs to be able to take in any type of vertex layout!~~
+	1. Solve Method: With the addition of vertex_layout.h we added rules for mapping of vertex locations in shaders, and now when setting up meshes you must provide its layout for the setup to layout its vertex appropriately.
+	1. Date: 3/17/2026
+
+---
+
+3/X/2026
+
+1.  Issue: X
+	1. Solve Method: Y
+	1. Date: X/X/2026
+2.  Issue: X
+	1. Solve Method: Y
+	1. Date: X/X/2026
+
+---
+
+3/X/2026
+
+1.  Issue: X
 	1. Solve Method: Y
 	1. Date: X/X/2026
 2.  Issue: X
