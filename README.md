@@ -18,6 +18,23 @@ Ensure the top toolbar in Visual Studio is set to **Debug (or Release) and x64**
 4. **Build and Run:**  
 Press F5 or click the Local Windows Debugger button.
 
+## Extra notes about project
+
+Please take note of the vertex slot rules when making new shaders!  
+**click the link to check the file: [vertex_layout.h](LearnOPGL/src/vertex_layout.h)** 
+
+```cpp
+//Please abide by the rules of the vertex slots!
+//This might change in the future make sure to check the vertex_layout.h file!
+namespace VertexSlot {
+    constexpr int Position = 0;
+    constexpr int Color = 1;
+    constexpr int UV0 = 2;
+    constexpr int Normal = 3;
+    //constexpr int Tangent = 4;
+    //constexpr int UV1 = 5;
+}
+```
 
 ## No dependencies folder exists
 This section will highlight what are the required dependencies & how to get them, for this project. This is here in the case that I decide to git ignore the dependencies folder.
@@ -36,8 +53,8 @@ Required Dependencies & Folder Architecture:
   * Check the image below. First set the red boxes, then finally, press generate & download the glad.zip file.
 <img width="500"  alt="Screenshot_1" src="https://github.com/user-attachments/assets/19c47266-5bf0-4959-a498-e2b64be4857f" />
 
-# Core OpenGL Renderer Completed - Image Below!
+# Stage 1: Core OpenGL Renderer Completed - Image Below!
 <img width="2557" height="1391" alt="image" src="https://github.com/user-attachments/assets/21278a64-6283-4907-81b1-1393d384b003" />
 
-
+# Stage 2: Lighting - WIP
 
