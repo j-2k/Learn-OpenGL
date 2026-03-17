@@ -1,3 +1,4 @@
+//inputhandler.h
 #pragma once
 
 #include "pch.h"
@@ -24,12 +25,17 @@ public:
         if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(m_window, true);
 
+        bool isSprinting = glfwGetKey(m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS;
+        if (isSprinting) m_camera.MovementSpeed *= 2;
+
         if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS) m_camera.ProcessKeyboard(FORWARD, dt);
         if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS) m_camera.ProcessKeyboard(BACKWARD, dt);
         if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS) m_camera.ProcessKeyboard(LEFT, dt);
         if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS) m_camera.ProcessKeyboard(RIGHT, dt);
         if (glfwGetKey(m_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) m_camera.ProcessKeyboard(UP, dt);
         if (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS) m_camera.ProcessKeyboard(DOWN, dt);
+        
+        if (isSprinting) m_camera.MovementSpeed *= 0.5;
 
         bool key1IsPressed = glfwGetKey(m_window, GLFW_KEY_1) == GLFW_PRESS;
         if (key1IsPressed && !m_key1WasPressed)

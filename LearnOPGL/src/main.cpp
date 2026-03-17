@@ -38,7 +38,7 @@ int main()
 	
 	unsigned int ichiseTex = loadTexture("./assets/ichise_ran_optimized.png");			//Texture Loading
 	MeshBuffers cubeMesh = setupMesh(createCubeEBO());							// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
-	MeshBuffers lightCubeMesh = setupMesh33(createCubeNormals());						// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
+	MeshBuffers lightCubeMesh = setupMesh(createCubeNormals(), Layout_Pos3_Norm3());						// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
 
 	//Generate random position for cubes at init time
 	glm::vec3 cubePositions[10];

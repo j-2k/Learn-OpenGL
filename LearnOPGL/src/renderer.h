@@ -2,6 +2,7 @@
 #pragma once
 #include "pch.h"
 #include "./geometry.h"
+#include "./vertex_layout.h"
 
 enum class DrawMode { Arrays, Indexed };
 
@@ -25,11 +26,11 @@ struct MeshBuffers
 };
 
 // Upload a GeometryData to the GPU and return its handles.
-// Vertex layout expected: vec3 pos | vec3 color | vec2 uv  (8 floats)
-MeshBuffers setupMesh(const GeometryData& geoData) {
+// Layout defines the vertex layout of said GeometryData.
+MeshBuffers setupMesh(const GeometryData& geoData, const VertexLayout& layout ) {
 
     MeshBuffers mesh;
-    mesh.vertexCount = static_cast<unsigned int>(geoData.vertices.size()) / 8; // 8 floats per vertex
+    mesh.vertexCount = static_cast<unsigned int>((geoData.vertices.size() * sizeof(float)) / layout.stride);
 
     glGenVertexArrays(1, &mesh.VAO);		// reserve a VAO ID
     glGenBuffers(1, &mesh.VBO);			// reserve a VBO ID
@@ -49,16 +50,13 @@ MeshBuffers setupMesh(const GeometryData& geoData) {
     }
 
     //glVertexAttribPointer (SLOT, SIZE, TYPE, NORMALIZED, STRIDE, OFFSET) <<< this is how we tell OpenGL how to interpret the vertex data we just uploaded. We have to do this for each attribute in our vertex data (position, color, texture coords)
-    // Slot 0: position (vec3)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);	// POSITION layout: slot 0, 3 floats, stride 12 bytes, offset 0
-    glEnableVertexAttribArray(0);	// enable attribute slot 0 so the shader can read it
-    // Slot 1: color (vec3)
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));	// COLOR layout is now : slot 1, 3 floats, stride 12 bytes, offset 12 bytes (after the position data)
-    glEnableVertexAttribArray(1);	// enable attribute slot 1 so the shader can read it
-    // Slot 2: uv (vec2)
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));	// TEXTURE layout is now : slot 2, 2 floats, stride 8 bytes, offset 12 bytes (after the color data)
-    glEnableVertexAttribArray(2);	// enable attribute slot 2 so the shader can read it
-
+    
+    // This handles vertex attribute pointers from the defined layout provided
+    for (const VertexAttribute& va : layout.vertAttributes) {
+        glVertexAttribPointer(va.slot, va.size, GL_FLOAT, GL_FALSE, layout.stride, (void*)(uintptr_t)va.offset);
+        glEnableVertexAttribArray(va.slot);
+    }
+    
     glBindVertexArray(0);			// stop recording, VAO is saved DONT NEED TO PUT IN RENDER LOOP LIKE BEFORE, ITS UNNECESSARY TO BIND/UNBIND EVERY FRAME. When changing VAO VBO EBOS etc they are overwritten, so this is not needed.
     return mesh;
 }
@@ -79,7 +77,6 @@ void initGLStates() {
     glCullFace(GL_BACK);		// cull back faces //glCullFace(GL_FRONT); to see front face culling & test!
     glFrontFace(GL_CCW);		// define front face as counter-clockwise (this is default)
 }
-
 
 //To be deleted. expected vertex layout: vec3 pos | vec3 normal (how many floats? 6 floats)
 MeshBuffers setupMesh33(const GeometryData& geoData) {
