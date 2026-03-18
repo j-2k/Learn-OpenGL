@@ -32,13 +32,13 @@ int main()
 
 	initGLStates();	//Depth testing, face culling, etc.
 
-	Shader shader("src/shaders/basic/basic-vs.glsl","src/shaders/basic/basic-fs.glsl"); //Shader Management
-	Shader lightShader("src/shaders/lightsource/lightsource-vs.glsl", "src/shaders/lightsource/lightsource-fs.glsl"); //Shader Management
-	Shader litShader("src/shaders/lit/lit-vs.glsl", "src/shaders/lit/lit-fs.glsl"); //Shader Management
+	Shader shader("src/shaders/basic/basic-vs.glsl","src/shaders/basic/basic-fs.glsl");
+	Shader lightShader("src/shaders/lightsource/lightsource-vs.glsl", "src/shaders/lightsource/lightsource-fs.glsl");
+	Shader litShader("src/shaders/lit/lit-vs.glsl", "src/shaders/lit/lit-fs.glsl");
 	
-	unsigned int ichiseTex = loadTexture("./assets/ichise_ran_optimized.png");			//Texture Loading
-	MeshBuffers cubeMesh = setupMesh(createCubeEBO(), Layout_Pos3_Col3_UV2());							// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
-	MeshBuffers lightCubeMesh = setupMesh(createCubeNormals(), Layout_Pos3_Norm3());						// Mesh Setup (Setup vertices and buffers and configure vertex attribute_
+	Texture ichiseTex("./assets/ichise_ran_optimized.png");								// Texture Loading
+	MeshBuffers cubeMesh = setupMesh(createCubeEBO(), Layout_Pos3_Col3_UV2());			// Mesh Setup (Setup vertices and buffers and configure vertex attribute)
+	MeshBuffers lightCubeMesh = setupMesh(createCubeNormals(), Layout_Pos3_Norm3());	// Mesh Setup (Setup vertices and buffers and configure vertex attribute)
 
 	//Generate random position for cubes at init time
 	glm::vec3 cubePositions[10];
@@ -95,7 +95,7 @@ int main()
 			// Below showcases how to bind textures in the case there are multiple textures in cases of when there are different meshes or multiple textures for one mesh.
 			// For this demo we just have one texture, but the process is the same regardless of how many textures you have, you just have to bind them to different texture units and then tell the shader which texture unit each sampler belongs to.
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, ichiseTex);
+			glBindTexture(GL_TEXTURE_2D, ichiseTex.id);
 			shader.setInt("tex0", 0);
 
 			//Multi Draw
@@ -136,9 +136,10 @@ int main()
 
 	//optional here but do know these exist
 	cubeMesh.destroy();
-	glDeleteTextures(1, &ichiseTex);
-	glDeleteProgram(shader.programID);
-	glDeleteProgram(lightShader.programID);
+	//glDeleteTextures(1, &ichiseTex.id);
+	//glDeleteProgram(shader.programID);
+	//glDeleteProgram(lightShader.programID);
+	//glDeleteProgram(litShader.programID);
 
 	return 0;
 }

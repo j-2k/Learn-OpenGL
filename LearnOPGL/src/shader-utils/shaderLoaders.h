@@ -16,6 +16,26 @@ public:
 	//constructor must take the input path for vert & frag shader source code
 	Shader(const char* vertexPath, const char* fragmentPath);
 
+	//=======================Added when desctructor was added to shader class=================
+	~Shader();
+	// Prevent copies
+	Shader(const Shader&) = delete;
+	Shader& operator=(const Shader&) = delete;
+
+	// Allow moves
+	Shader(Shader&& other) noexcept : programID(other.programID) {
+		other.programID = 0;
+	}
+	Shader& operator=(Shader&& other) noexcept {
+		if (this != &other) {
+			glDeleteProgram(programID);
+			programID = other.programID;
+			other.programID = 0;
+		}
+		return *this;
+	}
+	//=======================Added when desctructor was added to shader class=================
+
 	//activate the shader
 	void use();
 

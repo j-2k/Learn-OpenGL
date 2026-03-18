@@ -77,38 +77,3 @@ void initGLStates() {
     glCullFace(GL_BACK);		// cull back faces //glCullFace(GL_FRONT); to see front face culling & test!
     glFrontFace(GL_CCW);		// define front face as counter-clockwise (this is default)
 }
-
-//To be deleted. expected vertex layout: vec3 pos | vec3 normal (how many floats? 6 floats)
-MeshBuffers setupMesh33(const GeometryData& geoData) {
-
-    MeshBuffers mesh;
-    mesh.vertexCount = static_cast<unsigned int>(geoData.vertices.size()) / 6; // 6 floats per vertex
-
-    glGenVertexArrays(1, &mesh.VAO);		// reserve a VAO ID
-    glGenBuffers(1, &mesh.VBO);			// reserve a VBO ID
-
-    glBindVertexArray(mesh.VAO);			// start recording into VAO
-
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO);	// select VBO as the active buffer
-    glBufferData(GL_ARRAY_BUFFER, geoData.vertices.size() * sizeof(float), geoData.vertices.data(), GL_STATIC_DRAW);		// upload vertex data to GPU
-
-    if (!geoData.indices.empty())
-    {
-        mesh.drawMode = DrawMode::Indexed;
-        mesh.indexCount = static_cast<unsigned int>(geoData.indices.size());
-        glGenBuffers(1, &mesh.EBO);			// reserve an EBO ID
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.EBO);	// select EBO as the active buffer
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, geoData.indices.size() * sizeof(unsigned int), geoData.indices.data(), GL_STATIC_DRAW);	// upload vertex data to GPU
-    }
-
-    //glVertexAttribPointer (SLOT, SIZE, TYPE, NORMALIZED, STRIDE, OFFSET) <<< this is how we tell OpenGL how to interpret the vertex data we just uploaded. We have to do this for each attribute in our vertex data (position, color, texture coords)
-    // Slot 0: position (vec3)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);	// POSITION layout: slot 0, 3 floats, stride 12 bytes, offset 0
-    glEnableVertexAttribArray(0);	// enable attribute slot 0 so the shader can read it
-    // Slot 1: normal (vec3)
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));	// COLOR layout is now : slot 1, 3 floats, stride 12 bytes, offset 12 bytes (after the position data)
-    glEnableVertexAttribArray(1);	// enable attribute slot 1 so the shader can read it
-
-    glBindVertexArray(0);			// stop recording, VAO is saved DONT NEED TO PUT IN RENDER LOOP LIKE BEFORE, ITS UNNECESSARY TO BIND/UNBIND EVERY FRAME. When changing VAO VBO EBOS etc they are overwritten, so this is not needed.
-    return mesh;
-}
